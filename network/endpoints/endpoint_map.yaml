@@ -4,6 +4,9 @@ description: >
   A Map of OpenStack Endpoints
 
 parameters:
+  AodhApiVirtualIP:
+    type: string
+    default: ''
   CeilometerApiVirtualIP:
     type: string
     default: ''
@@ -43,6 +46,9 @@ parameters:
   EndpointMap:
     type: json
     default:
+      AodhAdmin: {protocol: 'http', port: '8042', host: 'IP_ADDRESS'}
+      AodhInternal: {protocol: 'http', port: '8042', host: 'IP_ADDRESS'}
+      AodhPublic: {protocol: 'http', port: '8042', host: 'IP_ADDRESS'}
       CeilometerAdmin: {protocol: 'http', port: '8777', host: 'IP_ADDRESS'}
       CeilometerInternal: {protocol: 'http', port: '8777', host: 'IP_ADDRESS'}
       CeilometerPublic: {protocol: 'http', port: '8777', host: 'IP_ADDRESS'}
@@ -82,6 +88,28 @@ parameters:
     description: The DNS name of this cloud. E.g. ci-overcloud.tripleo.org
 
 resources:
+
+  AodhInternal:
+    type: OS::TripleO::Endpoint
+    properties:
+      EndpointName: AodhInternal
+      EndpointMap: { get_param: EndpointMap }
+      CloudName: {get_param: CloudName}
+      IP: {get_param: AodhApiVirtualIP}
+  AodhPublic:
+    type: OS::TripleO::Endpoint
+    properties:
+      EndpointName: AodhPublic
+      EndpointMap: { get_param: EndpointMap }
+      CloudName: {get_param: CloudName}
+      IP: {get_param: PublicVirtualIP}
+  AodhAdmin:
+    type: OS::TripleO::Endpoint
+    properties:
+      EndpointName: AodhAdmin
+      EndpointMap: { get_param: EndpointMap }
+      CloudName: {get_param: CloudName}
+      IP: {get_param: AodhApiVirtualIP}
 
   CeilometerInternal:
     type: OS::TripleO::Endpoint
@@ -407,6 +435,9 @@ resources:
 outputs:
   endpoint_map:
     value:
+      AodhInternal: {get_attr: [ AodhInternal, endpoint] }
+      AodhPublic: {get_attr: [ AodhPublic, endpoint] }
+      AodhAdmin: {get_attr: [ AodhAdmin, endpoint] }
       CeilometerInternal: {get_attr: [ CeilometerInternal, endpoint] }
       CeilometerPublic: {get_attr: [ CeilometerPublic, endpoint] }
       CeilometerAdmin: {get_attr: [ CeilometerAdmin, endpoint] }

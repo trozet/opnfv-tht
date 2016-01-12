@@ -36,6 +36,8 @@ parameters:
     type: comma_delimited_list
   ceilometer_api_node_ips:
     type: comma_delimited_list
+  aodh_api_node_ips:
+    type: comma_delimited_list
   nova_api_node_ips:
     type: comma_delimited_list
   nova_metadata_node_ips:
@@ -172,6 +174,14 @@ resources:
                         list_join:
                         - "','"
                         - {get_param: ceilometer_api_node_ips}
+                aodh_api_node_ips:
+                  str_replace:
+                    template: "['SERVERS_LIST']"
+                    params:
+                      SERVERS_LIST:
+                        list_join:
+                        - "','"
+                        - {get_param: aodh_api_node_ips}
                 nova_api_node_ips:
                   str_replace:
                     template: "['SERVERS_LIST']"

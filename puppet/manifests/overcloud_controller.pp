@@ -173,6 +173,9 @@ if hiera('step') >= 2 {
 
 if hiera('step') >= 3 {
 
+  # Apache
+  include ::apache
+
   include ::keystone
 
   #TODO: need a cleanup-keystone-tokens.sh solution here
@@ -274,6 +277,7 @@ if hiera('step') >= 3 {
     if ! str2bool(hiera('opendaylight_enable_l3', 'no')) {
       Service['neutron-server'] -> Service['neutron-l3']
     }
+
     if str2bool(hiera('opendaylight_install', 'false')) {
       $controller_ips = split(hiera('controller_node_ips'), ',')
       $opendaylight_controller_ip = $controller_ips[0]
@@ -518,6 +522,20 @@ if hiera('step') >= 3 {
   }
 
   Cron <| title == 'ceilometer-expirer' |> { command => "sleep $((\$(od -A n -t d -N 3 /dev/urandom) % 86400)) && ${::ceilometer::params::expirer_command}" }
+
+  # Aodh
+  include ::aodh::auth
+  include ::aodh::api
+  include ::aodh::evaluator
+  include ::aodh::notifier
+  include ::aodh::listener
+  include ::aodh::client
+  include ::aodh::db::sync
+  class { '::aodh' :
+    database_connection => $ceilometer_database_connection,
+  }
+  # To manage the upgrade:
+  Exec['ceilometer-dbsync'] -> Exec['aodh-db-sync']
 
   # Heat
   include ::heat
