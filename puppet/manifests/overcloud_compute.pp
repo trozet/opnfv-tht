@@ -75,9 +75,36 @@ class { '::neutron::plugins::ml2':
   tenant_network_types => [hiera('neutron_tenant_network_type')],
 }
 
-class { '::neutron::agents::ml2::ovs':
-  bridge_mappings => split(hiera('neutron_bridge_mappings'), ','),
-  tunnel_types    => split(hiera('neutron_tunnel_types'), ','),
+if 'opendaylight' in hiera('neutron_mechanism_drivers') {
+
+  if str2bool(hiera('opendaylight_install', 'false')) {
+    $controller_ips = split(hiera('controller_node_ips'), ',')
+    $opendaylight_controller_ip = $controller_ips[0]
+  } else {
+    $opendaylight_controller_ip = hiera('opendaylight_controller_ip')
+  }
+
+  if str2bool(hiera('opendaylight_install', 'false')) {
+    class { 'neutron::plugins::ovs::opendaylight':
+      odl_controller_ip => $opendaylight_controller_ip,
+      tunnel_ip         => hiera('neutron::agents::ml2::ovs::local_ip'),
+      odl_port          => hiera('opendaylight_port'),
+      odl_username      => hiera('opendaylight_username'),
+      odl_password      => hiera('opendaylight_password'),
+    }
+  }
+
+} elsif 'onos_ml2' in hiera('neutron_mechanism_drivers') {
+  $controller_ips = split(hiera('controller_node_ips'), ',')
+  class {'onos::ovs_computer':
+    manager_ip => $controller_ips[0]
+  }
+
+} else {
+  class { 'neutron::agents::ml2::ovs':
+    bridge_mappings => split(hiera('neutron_bridge_mappings'), ','),
+    tunnel_types    => split(hiera('neutron_tunnel_types'), ','),
+  }
 }
 
 if 'cisco_n1kv' in hiera('neutron_mechanism_drivers') {

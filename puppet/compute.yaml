@@ -213,6 +213,23 @@ parameters:
   NtpServer:
     type: string
     default: ''
+  OpenDaylightPort:
+    default: 8081
+    description: Set opendaylight service port
+    type: number
+  OpenDaylightUsername:
+    default: 'admin'
+    description: The username for the opendaylight server.
+    type: string
+  OpenDaylightPassword:
+    default: 'admin'
+    type: string
+    description: The password for the opendaylight server.
+    hidden: true
+  ONOSPort:
+    default: 8181
+    description: Set onos service port
+    type: number
   RabbitHost:
     type: string
     default: ''  # Has to be here because of the ignored empty value bug
@@ -406,6 +423,10 @@ resources:
                 neutron::rabbit_user: {get_input: rabbit_user}
                 neutron::rabbit_use_ssl: {get_input: rabbit_client_use_ssl}
                 neutron::rabbit_port: {get_input: rabbit_client_port}
+                opendaylight_port: {get_input: opendaylight_port}
+                opendaylight_username: {get_input: opendaylight_username}
+                opendaylight_password: {get_input: opendaylight_password}
+                onos_port: {get_input: onos_port}
                 neutron_flat_networks: {get_input: neutron_flat_networks}
                 neutron_host: {get_input: neutron_host}
                 neutron::agents::ml2::ovs::local_ip: {get_input: neutron_local_ip}
@@ -459,6 +480,10 @@ resources:
         snmpd_readonly_user_name: {get_param: SnmpdReadonlyUserName}
         snmpd_readonly_user_password: {get_param: SnmpdReadonlyUserPassword}
         glance_api_servers: {get_param: [EndpointMap, GlanceInternal, uri]}
+        opendaylight_port: {get_param: OpenDaylightPort}
+        opendaylight_username: {get_param: OpenDaylightUsername}
+        opendaylight_password: {get_param: OpenDaylightPassword}
+        onos_port: {get_param: ONOSPort}
         neutron_flat_networks: {get_param: NeutronFlatNetworks}
         neutron_host: {get_param: NeutronHost}
         neutron_local_ip: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NeutronTenantNetwork]}]}

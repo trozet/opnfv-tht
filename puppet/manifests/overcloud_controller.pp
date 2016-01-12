@@ -30,6 +30,20 @@ if hiera('step') >= 1 {
 
 if hiera('step') >= 2 {
 
+  if str2bool(hiera('opendaylight_install', 'false')) {
+    class {"opendaylight":
+      extra_features => ['odl-ovsdb-openstack'],
+      odl_rest_port  => hiera('opendaylight_port'),
+    }
+  }
+  
+  if 'onos_ml2' in hiera('neutron_mechanism_drivers') {
+    # install onos and config ovs
+    class {"onos":
+      controllers_ip => $controller_node_ips
+    }
+  }
+
   if count(hiera('ntp::servers')) > 0 {
     include ::ntp
   }
@@ -223,9 +237,7 @@ if hiera('step') >= 3 {
   include ::nova::scheduler
   include ::nova::scheduler::filter
 
-  include ::neutron
   include ::neutron::server
-  include ::neutron::agents::l3
   include ::neutron::agents::dhcp
   include ::neutron::agents::metadata
 
@@ -237,15 +249,71 @@ if hiera('step') >= 3 {
     require => Package['neutron'],
   }
 
+  if 'onos_ml2' in hiera('neutron_mechanism_drivers') {
+    # config neutron service_plugins to onos driver
+    class { '::neutron':
+      service_plugins  => [hiera('neutron_service_plugins')]
+    }
+  } else {
+    include ::neutron
+    include ::neutron::agents::l3
+  }
+  
   class { '::neutron::plugins::ml2':
     flat_networks        => split(hiera('neutron_flat_networks'), ','),
     tenant_network_types => [hiera('neutron_tenant_network_type')],
     mechanism_drivers    => [hiera('neutron_mechanism_drivers')],
   }
-  class { '::neutron::agents::ml2::ovs':
-    bridge_mappings => split(hiera('neutron_bridge_mappings'), ','),
-    tunnel_types    => split(hiera('neutron_tunnel_types'), ','),
+
+  if 'opendaylight' in hiera('neutron_mechanism_drivers') {
+
+    if str2bool(hiera('opendaylight_install', 'false')) {
+      $controller_ips = split(hiera('controller_node_ips'), ',')
+      $opendaylight_controller_ip = $controller_ips[0]
+    } else {
+      $opendaylight_controller_ip = hiera('opendaylight_controller_ip')
+    }
+
+    class { 'neutron::plugins::ml2::opendaylight':
+      odl_controller_ip => $opendaylight_controller_ip,
+      odl_username      => hiera('opendaylight_username'),
+      odl_password      => hiera('opendaylight_password'),
+      odl_port          => hiera('opendaylight_port'),
+    }
+
+    if str2bool(hiera('opendaylight_install', 'false')) {
+      class { 'neutron::plugins::ovs::opendaylight':
+        odl_controller_ip => $opendaylight_controller_ip,
+        tunnel_ip         => hiera('neutron::agents::ml2::ovs::local_ip'),
+        odl_port          => hiera('opendaylight_port'),
+        odl_username      => hiera('opendaylight_username'),
+        odl_password      => hiera('opendaylight_password'),
+      }
+    }
+    Service['neutron-server'] -> Service['neutron-l3']
+
+  } elsif 'onos_ml2' in hiera('neutron_mechanism_drivers') {
+    #config ml2_conf.ini with onos url address
+    $onos_port = hiera('onos_port')
+    $private_ip = hiera('neutron::agents::ml2::ovs::local_ip')
+
+    neutron_plugin_ml2 {
+      'onos/username':         value => 'admin';
+      'onos/password':         value => 'admin';
+      'onos/url_path':         value => "http://${controller_node_ips[0]}:${onos_port}/onos/vtn";
+    }
+
+  } else {
+
+    class { 'neutron::agents::ml2::ovs':
+      bridge_mappings => split(hiera('neutron_bridge_mappings'), ','),
+      tunnel_types => split(hiera('neutron_tunnel_types'), ','),
+    }
+
+    Service['neutron-server'] -> Service['neutron-ovs-agent-service']
+    Service['neutron-server'] -> Service['neutron-l3']
   }
+
   if 'cisco_n1kv' in hiera('neutron_mechanism_drivers') {
     include ::neutron::plugins::ml2::cisco::nexus1000v
 
@@ -280,8 +348,6 @@ if hiera('step') >= 3 {
   }
 
   Service['neutron-server'] -> Service['neutron-dhcp-service']
-  Service['neutron-server'] -> Service['neutron-l3']
-  Service['neutron-server'] -> Service['neutron-ovs-agent-service']
   Service['neutron-server'] -> Service['neutron-metadata']
 
   include ::cinder
