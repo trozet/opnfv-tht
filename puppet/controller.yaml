@@ -357,6 +357,10 @@ parameters:
     default: 'True'
     description: Allow automatic l3-agent failover
     type: string
+  NeutronEnableForceMetadata:
+    default: 'False'
+    description: If True, DHCP always provides metadata route to VM.
+    type: string
   NeutronEnableTunnelling:
     type: string
     default: "True"
@@ -460,6 +464,10 @@ parameters:
     type: string
     description: The password for the opendaylight server.
     hidden: true
+  OpenDaylightEnableL3:
+    description: Knob to enable/disable ODL L3
+    type: string
+    default: 'no'
   ONOSPort:
     default: 8181
     description: Set onos service port
@@ -717,6 +725,7 @@ resources:
       input_values:
         bootstack_nodeid: {get_attr: [Controller, name]}
         neutron_enable_tunneling: {get_param: NeutronEnableTunnelling}
+        neutron_enable_force_metadata: {get_param: NeutronEnableForceMetadata}
         haproxy_log_address: {get_param: HAProxySyslogAddress}
         heat.watch_server_url:
           list_join:
@@ -830,6 +839,7 @@ resources:
         opendaylight_install: {get_param: OpenDaylightInstall}
         opendaylight_username: {get_param: OpenDaylightUsername}
         opendaylight_password: {get_param: OpenDaylightPassword}
+        opendaylight_enable_l3: {get_param: OpenDaylightEnableL3}
         onos_port: {get_param: ONOSPort}
         neutron_flat_networks: {get_param: NeutronFlatNetworks}
         neutron_metadata_proxy_shared_secret: {get_param: NeutronMetadataProxySharedSecret}
@@ -1167,6 +1177,7 @@ resources:
                 opendaylight_install: {get_input: opendaylight_install}
                 opendaylight_username: {get_input: opendaylight_username}
                 opendaylight_password: {get_input: opendaylight_password}
+                opendaylight_enable_l3: {get_input: opendaylight_enable_l3}
                 
                 # ONOS
                 onos_port: {get_input: onos_port}
@@ -1187,6 +1198,7 @@ resources:
                 neutron_flat_networks: {get_input: neutron_flat_networks}
                 neutron::agents::metadata::shared_secret: {get_input: neutron_metadata_proxy_shared_secret}
                 neutron::agents::metadata::metadata_ip: {get_input: neutron_api_network}
+                neutron::agents::dhcp::enable_force_metadata: {get_input: neutron_enable_force_metadata}
                 neutron_agent_mode: {get_input: neutron_agent_mode}
                 neutron_router_distributed: {get_input: neutron_router_distributed}
                 neutron::core_plugin: {get_input: neutron_core_plugin}

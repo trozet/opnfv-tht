@@ -25,6 +25,10 @@ parameters:
     description: The admin password for the OpenDaylight node
     type: string
     hidden: true
+  OpenDaylightEnableL3:
+    description: Knob to enable/disable ODL L3
+    type: string
+    default: 'no'
   OpenDaylightPort:
     default: 8081
     description: Set OpenDaylight service port
@@ -123,6 +127,9 @@ resources:
             params:
               server: {get_param: NtpServer}
         opendaylight_port: {get_param: OpenDaylightPort}
+        opendaylight_enable_l3: {get_param: OpenDaylightEnableL3}
+        opendaylight_username: {get_param: OpenDaylightUsername}
+        opendaylight_password: {get_param: OpenDaylightPassword}
 
   OpenDaylightConfig:
     type: OS::Heat::StructuredConfig
@@ -147,6 +154,7 @@ resources:
                 opendaylight::admin_username: {get_param: OpenDaylightUsername}
                 opendaylight::admin_password: {get_param: OpenDaylightPassword}
                 opendaylight_port: {get_input: opendaylight_port}
+                opendaylight_enable_l3: {get_input: opendaylight_enable_l3}
             ceph:
               raw_data: {get_file: hieradata/ceph.yaml}
 

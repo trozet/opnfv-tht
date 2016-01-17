@@ -113,6 +113,10 @@ parameters:
     default: ''
     type: string
     description: Neutron ID for ctlplane network.
+  NeutronEnableForceMetadata:
+    default: 'False'
+    description: If True, DHCP always provides metadata route to VM.
+    type: string
   NeutronEnableTunnelling:
     type: string
     default: "True"
@@ -231,6 +235,10 @@ parameters:
     default: 8081
     description: Set opendaylight service port
     type: number
+  OpenDaylightEnableL3:
+    description: Knob to enable/disable ODL L3
+    type: string
+    default: 'no'
   OpenDaylightInstall:
     default: false
     description: Whether to install OpenDaylight on the control nodes.
@@ -818,6 +826,7 @@ resources:
           OpenDaylightPort: {get_param: OpenDaylightPort}
           OpenDaylightUsername: {get_param: OpenDaylightUsername}
           OpenDaylightPassword: {get_param: OpenDaylightPassword}
+          OpenDaylightEnableL3: {get_param: OpenDaylightEnableL3}
           OpenDaylightHostname:
             str_replace:
               template: {get_param: OpenDaylightHostnameFormat}
@@ -886,6 +895,7 @@ resources:
           NeutronBridgeMappings: {get_param: NeutronBridgeMappings}
           NeutronExternalNetworkBridge: {get_param: NeutronExternalNetworkBridge}
           NeutronEnableTunnelling: {get_param: NeutronEnableTunnelling}
+          NeutronEnableForceMetadata: {get_param: NeutronEnableForceMetadata}
           NeutronNetworkVLANRanges: {get_param: NeutronNetworkVLANRanges}
           NeutronPublicInterface: {get_param: NeutronPublicInterface}
           NeutronPublicInterfaceDefaultRoute: {get_param: NeutronPublicInterfaceDefaultRoute}
@@ -911,6 +921,7 @@ resources:
           OpenDaylightInstall: {get_param: OpenDaylightInstall}
           OpenDaylightUsername: {get_param: OpenDaylightUsername}
           OpenDaylightPassword: {get_param: OpenDaylightPassword}
+          OpenDaylightEnableL3: {get_param: OpenDaylightEnableL3}
           PcsdPassword: {get_resource: PcsdPassword}
           PublicVirtualInterface: {get_param: PublicVirtualInterface}
           RabbitPassword: {get_param: RabbitPassword}

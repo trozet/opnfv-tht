@@ -34,6 +34,7 @@ if hiera('step') >= 2 {
     class {"opendaylight":
       extra_features => ['odl-ovsdb-openstack'],
       odl_rest_port  => hiera('opendaylight_port'),
+      enable_l3      => hiera('opendaylight_enable_l3', 'no'),
     }
   }
   
@@ -256,7 +257,11 @@ if hiera('step') >= 3 {
     }
   } else {
     include ::neutron
-    include ::neutron::agents::l3
+    if 'opendaylight' in hiera('neutron_mechanism_drivers') {
+      if ! str2bool(hiera('opendaylight_enable_l3', 'no')) {
+        include ::neutron::agents::l3
+      }
+    }
   }
   
   class { '::neutron::plugins::ml2':
@@ -266,7 +271,9 @@ if hiera('step') >= 3 {
   }
 
   if 'opendaylight' in hiera('neutron_mechanism_drivers') {
-
+    if ! str2bool(hiera('opendaylight_enable_l3', 'no')) {
+      Service['neutron-server'] -> Service['neutron-l3']
+    }
     if str2bool(hiera('opendaylight_install', 'false')) {
       $controller_ips = split(hiera('controller_node_ips'), ',')
       $opendaylight_controller_ip = $controller_ips[0]
@@ -290,7 +297,6 @@ if hiera('step') >= 3 {
         odl_password      => hiera('opendaylight_password'),
       }
     }
-    Service['neutron-server'] -> Service['neutron-l3']
 
   } elsif 'onos_ml2' in hiera('neutron_mechanism_drivers') {
     #config ml2_conf.ini with onos url address

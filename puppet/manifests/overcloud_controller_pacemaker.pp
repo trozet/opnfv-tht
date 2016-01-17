@@ -384,6 +384,7 @@ if hiera('step') >= 2 {
     class {"opendaylight":
       extra_features => ['odl-ovsdb-openstack'],
       odl_rest_port  => hiera('opendaylight_port'),
+      enable_l3      => hiera('opendaylight_enable_l3', 'no'),
     }
   }
 
@@ -659,9 +660,11 @@ if hiera('step') >= 3 {
         odl_password      => hiera('opendaylight_password'),
       }
     }
-    class { '::neutron::agents::l3' :
-      manage_service => false,
-      enabled        => false,
+    if ! str2bool(hiera('opendaylight_enable_l3', 'no')) {
+      class { '::neutron::agents::l3' :
+        manage_service => false,
+        enabled        => false,
+      }
     }
   } elsif 'onos_ml2' in hiera('neutron_mechanism_drivers') {
     #config ml2_conf.ini with onos url address
@@ -710,7 +713,7 @@ if hiera('step') >= 3 {
   if hiera('neutron_enable_bigswitch_ml2', false) {
     include ::neutron::plugins::ml2::bigswitch::restproxy
   }
-  if !('onos_ml2' in hiera('neutron_mechanism_drivers')) {
+  if !('onos_ml2' in hiera('neutron_mechanism_drivers') or str2bool(hiera('opendaylight_enable_l3', 'no'))) {
     neutron_l3_agent_config {
       'DEFAULT/ovs_use_veth': value => hiera('neutron_ovs_use_veth', false);
     }
@@ -1216,7 +1219,7 @@ if hiera('step') >= 4 {
                     Pacemaker::Resource::Service["${::neutron::params::dhcp_agent_service}"]],
       }
     }
-    if !('onos_ml2' in hiera('neutron_mechanism_drivers')) {
+    if !('onos_ml2' in hiera('neutron_mechanism_drivers') or str2bool(hiera('opendaylight_enable_l3', 'no'))) {
       pacemaker::constraint::base { 'neutron-dhcp-agent-to-l3-agent-constraint':
         constraint_type => 'order',
         first_resource  => "${::neutron::params::dhcp_agent_service}-clone",
@@ -1248,7 +1251,7 @@ if hiera('step') >= 4 {
         score   => 'INFINITY',
         require => [Pacemaker::Resource::Service[$::neutron::params::l3_agent_service],
                     Pacemaker::Resource::Service[$::neutron::params::metadata_agent_service]],
-     }
+      }
     }
     # Nova
     pacemaker::resource::service { $::nova::params::api_service_name :
