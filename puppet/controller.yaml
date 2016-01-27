@@ -812,6 +812,7 @@ resources:
               - {get_param: MysqlVirtualIP}
               - '/heat'
         keystone_ca_certificate: {get_param: KeystoneCACertificate}
+        keystone_admin_vip: {get_param: KeystoneAdminApiVirtualIP}
         keystone_signing_key: {get_param: KeystoneSigningKey}
         keystone_signing_certificate: {get_param: KeystoneSigningCertificate}
         keystone_ssl_certificate: {get_param: KeystoneSSLCertificate}
@@ -1093,7 +1094,7 @@ resources:
                 cinder_iscsi_ip_address: {get_input: cinder_iscsi_network}
                 cinder::database_connection: {get_input: cinder_dsn}
                 cinder::api::keystone_password: {get_input: cinder_password}
-                cinder::api::auth_uri: {get_input: keystone_auth_uri}
+                cinder::api::keystone_auth_host: {get_input: keystone_admin_vip}
                 cinder::api::identity_uri: {get_input: keystone_identity_uri}
                 cinder::api::bind_host: {get_input: cinder_api_network}
                 cinder::rabbit_userid: {get_input: rabbit_username}
