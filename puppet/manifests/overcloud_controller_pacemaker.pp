@@ -1431,6 +1431,15 @@ if hiera('step') >= 4 {
       $redis_ceilometer_constraint_params = 'require-all=false'
       $redis_aodh_constraint_params = 'require-all=false'
     }
+    pacemaker::constraint::base { 'keystone-then-aodh-api-constraint':
+      constraint_type => 'order',
+      first_resource  => "${::keystone::params::service_name}-clone",
+      second_resource => "${::aodh::params::api_service_name}-clone",
+      first_action    => 'start',
+      second_action   => 'start',
+      require         => [Pacemaker::Resource::Service[$::aodh::params::api_service_name],
+                          Pacemaker::Resource::Service[$::keystone::params::service_name]],
+    }
     pacemaker::constraint::base { 'redis-then-ceilometer-central-constraint':
       constraint_type   => 'order',
       first_resource    => 'redis-master',
