@@ -255,6 +255,7 @@ resources:
                 neutron::rabbit_hosts: *rabbit_nodes_array
                 nova::rabbit_hosts: *rabbit_nodes_array
                 keystone::rabbit_hosts: *rabbit_nodes_array
+                aodh::rabbit_hosts: *rabbit_nodes_array
 
 outputs:
   config_id:
