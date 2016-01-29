@@ -29,6 +29,10 @@ parameters:
     description: Knob to enable/disable ODL L3
     type: string
     default: 'no'
+  OpenDaylightFeatures:
+    description: List of features to install with ODL
+    type: comma_delimited_list
+    default: "odl-ovsdb-openstack"
   OpenDaylightPort:
     default: 8081
     description: Set OpenDaylight service port
@@ -130,6 +134,7 @@ resources:
         opendaylight_enable_l3: {get_param: OpenDaylightEnableL3}
         opendaylight_username: {get_param: OpenDaylightUsername}
         opendaylight_password: {get_param: OpenDaylightPassword}
+        opendaylight_features: {get_param: OpenDaylightFeatures}
 
   OpenDaylightConfig:
     type: OS::Heat::StructuredConfig
@@ -155,6 +160,7 @@ resources:
                 opendaylight::admin_password: {get_param: OpenDaylightPassword}
                 opendaylight_port: {get_input: opendaylight_port}
                 opendaylight_enable_l3: {get_input: opendaylight_enable_l3}
+                opendaylight_features: {get_input: opendaylight_features}
             ceph:
               raw_data: {get_file: hieradata/ceph.yaml}
 

@@ -20,7 +20,7 @@ if count(hiera('ntp::servers')) > 0 {
 }
 
 class {"opendaylight":
-  extra_features => ['odl-ovsdb-openstack'],
+  extra_features => any2array(hiera('opendaylight_features', 'odl-ovsdb-openstack')),
   odl_rest_port  => hiera('opendaylight_port'),
   enable_l3      => hiera('opendaylight_enable_l3', 'no'),
 }

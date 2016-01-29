@@ -244,6 +244,10 @@ parameters:
     description: Knob to enable/disable ODL L3
     type: string
     default: 'no'
+  OpenDaylightFeatures:
+    description: List of features to install with ODL
+    type: comma_delimited_list
+    default: "odl-ovsdb-openstack"
   OpenDaylightInstall:
     default: false
     description: Whether to install OpenDaylight on the control nodes.
@@ -832,6 +836,7 @@ resources:
           OpenDaylightImage: {get_param: OpenDaylightImage}
           OpenDaylightPort: {get_param: OpenDaylightPort}
           OpenDaylightUsername: {get_param: OpenDaylightUsername}
+          OpenDaylightFeatures: {get_param: OpenDaylightFeatures}
           OpenDaylightPassword: {get_param: OpenDaylightPassword}
           OpenDaylightEnableL3: {get_param: OpenDaylightEnableL3}
           OpenDaylightHostname:
@@ -928,6 +933,7 @@ resources:
           OpenDaylightPort: {get_param: OpenDaylightPort}
           OpenDaylightInstall: {get_param: OpenDaylightInstall}
           OpenDaylightUsername: {get_param: OpenDaylightUsername}
+          OpenDaylightFeatures: {get_param: OpenDaylightFeatures}
           OpenDaylightPassword: {get_param: OpenDaylightPassword}
           OpenDaylightEnableL3: {get_param: OpenDaylightEnableL3}
           PcsdPassword: {get_resource: PcsdPassword}
