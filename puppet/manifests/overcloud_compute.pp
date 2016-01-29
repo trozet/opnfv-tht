@@ -84,14 +84,12 @@ if 'opendaylight' in hiera('neutron_mechanism_drivers') {
     $opendaylight_controller_ip = hiera('opendaylight_controller_ip')
   }
 
-  if str2bool(hiera('opendaylight_install', 'false')) {
-    class { 'neutron::plugins::ovs::opendaylight':
+  class { 'neutron::plugins::ovs::opendaylight':
       odl_controller_ip => $opendaylight_controller_ip,
       tunnel_ip         => hiera('neutron::agents::ml2::ovs::local_ip'),
       odl_port          => hiera('opendaylight_port'),
       odl_username      => hiera('opendaylight_username'),
       odl_password      => hiera('opendaylight_password'),
-    }
   }
 
 } elsif 'onos_ml2' in hiera('neutron_mechanism_drivers') {

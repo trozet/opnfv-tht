@@ -16,7 +16,7 @@ parameters:
     # increase this if you need more ODL nodes
     # OpenDaylightCount: 1
     ControllerEnableSwiftStorage: false
-    OpenDaylightFeatures: "odl-ovsdb-openstack,odl-ovsdb-sfc-test"
+    OpenDaylightFeatures: "odl-ovsdb-sfc-rest"
     NeutronL3HA: false
     ExtraConfig:
       tripleo::ringbuilder::build_ring: False

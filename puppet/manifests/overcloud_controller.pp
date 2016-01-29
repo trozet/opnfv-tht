@@ -285,6 +285,30 @@ if hiera('step') >= 3 {
       $opendaylight_controller_ip = hiera('opendaylight_controller_ip')
     }
 
+    # co-existence hacks for SFC
+    if hiera('opendaylight_features', 'odl-ovsdb-openstack') =~ /odl-ovsdb-sfc-rest/ {
+      $opendaylight_port = hiera('opendaylight_port')
+      $netvirt_coexist_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/restconf/config/netvirt-providers-config:netvirt-providers-config"
+      $netvirt_post_body = "{'netvirt-providers-config': {'table-offset': 1}}"
+      $sfc_coexist_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/restconf/config/sfc-of-renderer:sfc-of-renderer-config"
+      $sfc_post_body = "{ 'sfc-of-renderer-config' : { 'sfc-of-table-offset' : 150, 'sfc-of-app-egress-table-offset' : 11 }}"
+      $odl_username = hiera('opendaylight_username')
+      $odl_password = hiera('opendaylight_password')
+      exec { 'Coexistence table offsets for netvirt':
+        command   => "curl -o /dev/null --fail --silent -u ${odl_username}:${odl_password} ${netvirt_coexist_url} -i -H 'Content-Type: application/json' --data \'${netvirt_post_body}\' -X PUT",
+        tries     => 5,
+        try_sleep => 30,
+        path      => '/usr/sbin:/usr/bin:/sbin:/bin',
+      } ->
+      # Coexist for SFC
+      exec { 'Coexistence table offsets for sfc':
+        command   => "curl -o /dev/null --fail --silent -u ${odl_username}:${odl_password} ${sfc_coexist_url} -i -H 'Content-Type: application/json' --data \'${sfc_post_body}\' -X PUT",
+        tries     => 5,
+        try_sleep => 30,
+        path      => '/usr/sbin:/usr/bin:/sbin:/bin',
+      }
+    }
+
     class { 'neutron::plugins::ml2::opendaylight':
       odl_controller_ip => $opendaylight_controller_ip,
       odl_username      => hiera('opendaylight_username'),
