@@ -883,13 +883,13 @@ if hiera('step') >= 3 {
     swift::storage::filter::healthcheck { $swift_components : }
   }
 
+  $mongo_node_string = join($mongo_node_ips_with_port, ',')
   # Ceilometer
   case downcase(hiera('ceilometer_backend')) {
     /mysql/: {
       $ceilometer_database_connection = hiera('ceilometer_mysql_conn_string')
     }
     default: {
-      $mongo_node_string = join($mongo_node_ips_with_port, ',')
       $ceilometer_database_connection = "mongodb://${mongo_node_string}/ceilometer?replicaSet=${mongodb_replset}"
     }
   }
@@ -949,6 +949,12 @@ if hiera('step') >= 3 {
     enabled        => false,
   }
 
+  $aodh_database_connection = "mongodb://${mongo_node_string}/aodh?replicaSet=${mongodb_replset}"
+
+  class { '::aodh::db':
+    database_connection => $aodh_database_connection
+  }
+
   # Aodh
   include ::aodh
   include ::aodh::config
@@ -970,6 +976,34 @@ if hiera('step') >= 3 {
     manage_service => false,
     enabled        => false,
   }
+
+  $event_pipeline = "---
+sources:
+    - name: event_source
+      events:
+          - \"*\"
+      sinks:
+          - event_sink
+sinks:
+    - name: event_sink
+      transformers:
+      triggers:
+      publishers:
+          - notifier://?topic=alarm.all
+          - notifier://
+"
+
+  # aodh hacks
+  file { '/etc/ceilometer/event_pipeline':
+    ensure  => present,
+    content => $event_pipeline
+  }
+
+  user { 'aodh':
+     groups => 'nobody'
+  }
+
+
 
   # httpd/apache and horizon
   # NOTE(gfidente): server-status can be consumed by the pacemaker resource agent
@@ -1005,32 +1039,6 @@ if hiera('step') >= 3 {
 
 if hiera('step') >= 4 {
   include ::keystone::cron::token_flush
-
-  $event_pipeline = "---
-sources:
-    - name: event_source
-      events:
-          - \"*\"
-      sinks:
-          - event_sink
-sinks:
-    - name: event_sink
-      transformers:
-      triggers:
-      publishers:
-          - notifier://?topic=alarm.all
-          - notifier://
-"
-
-  # aodh hacks
-  file { '/etc/ceilometer/event_pipeline':
-    ensure  => present,
-    content => $event_pipeline
-  }
-
-  user { 'aodh':
-     groups => 'nobody'
-  }
 
   if $pacemaker_master {
 
