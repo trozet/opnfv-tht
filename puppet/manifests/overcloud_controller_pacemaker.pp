@@ -994,7 +994,7 @@ sinks:
 "
 
   # aodh hacks
-  file { '/etc/ceilometer/event_pipeline':
+  file { '/etc/ceilometer/event_pipeline.yaml':
     ensure  => present,
     content => $event_pipeline
   }
