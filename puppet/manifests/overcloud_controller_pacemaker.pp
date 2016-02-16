@@ -628,6 +628,18 @@ if hiera('step') >= 3 {
     require => Package['neutron'],
   }
 
+  # SDNVPN Hack
+  if ('networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin' in hiera('neutron::service_plugins'))
+  {
+    class  { 'neutron::config':
+      server_config => {
+        'service_providers/service_provider' => {
+          'value' => 'BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.driver_api.BGPVPNDriver:default'
+        }
+      }
+    }
+  }
+
   class { '::neutron::plugins::ml2':
     flat_networks        => split(hiera('neutron_flat_networks'), ','),
     tenant_network_types => [hiera('neutron_tenant_network_type')],

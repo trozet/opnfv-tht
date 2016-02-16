@@ -1,0 +1,29 @@
+# Environment file used to enable OpenDaylight
+# Currently uses overcloud image that is assumed
+# to be virt-customized with ODL RPM already on it
+
+# These parameters customize the OpenDaylight Node
+# The user name and password are for the ODL service
+# Defaults are included here for reference
+#parameter_defaults:
+#  OpenDaylightFlavor: baremetal
+#  OpenDaylightHostname: opendaylight-server
+#  OpenDaylightImage: overcloud-full
+#  OpenDaylightUsername: admin
+#  OpenDaylightPassword: admin
+
+parameters:
+    # increase this if you need more ODL nodes
+    # OpenDaylightCount: 1
+    ControllerEnableSwiftStorage: false
+    OpenDaylightFeatures: "odl-ovsdb-openstack,odl-vpnservice-api,odl-vpnservice-impl,odl-vpnservice-impl-rest,odl-vpnservice-impl-ui,odl-vpnservice-core"
+    NeutronL3HA: false
+    NeutronServicePlugins: "router,qos,networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin"
+    ExtraConfig:
+      tripleo::ringbuilder::build_ring: False
+      neutron_mechanism_drivers: ['opendaylight']
+      neutron_tenant_network_type: vxlan
+      # Enable this if you want OpenDaylight on the contollers
+      # reduce OpenDaylightCount to 0 if you don't want any
+      # OpenDaylight only nodes
+      opendaylight_install: true
