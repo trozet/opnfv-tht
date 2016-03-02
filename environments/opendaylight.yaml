@@ -16,6 +16,7 @@ parameters:
     # increase this if you need more ODL nodes
     # OpenDaylightCount: 1
     NeutronL3HA: false
+    OpenDaylightEnableHA: true
     ExtraConfig:
       neutron_mechanism_drivers: ['opendaylight']
       neutron_tenant_network_type: vxlan

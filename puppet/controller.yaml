@@ -476,10 +476,17 @@ parameters:
     description: Knob to enable/disable ODL L3
     type: string
     default: 'no'
+  OpenDaylightEnableHA:
+    description: Knob to enable/disable ODL HA
+    type: boolean
+    default: false
   OpenDaylightFeatures:
     description: List of features to install with ODL
     type: comma_delimited_list
     default: "odl-ovsdb-openstack"
+  OpenDaylightApiVirtualIP:
+    type: string
+    default: ''
   ONOSPort:
     default: 8181
     description: Set onos service port
@@ -853,6 +860,7 @@ resources:
         opendaylight_username: {get_param: OpenDaylightUsername}
         opendaylight_password: {get_param: OpenDaylightPassword}
         opendaylight_enable_l3: {get_param: OpenDaylightEnableL3}
+        opendaylight_enable_ha: {get_param: OpenDaylightEnableHA}
         opendaylight_features: {get_param: OpenDaylightFeatures}
         onos_port: {get_param: ONOSPort}
         neutron_flat_networks: {get_param: NeutronFlatNetworks}
@@ -1006,6 +1014,7 @@ resources:
         neutron_local_ip: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NeutronTenantNetwork]}]}
         ceilometer_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, CeilometerApiNetwork]}]}
         aodh_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, AodhApiNetwork]}]}
+        opendaylight_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, OpenDaylightApiNetwork]}]}
         nova_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NovaApiNetwork]}]}
         nova_metadata_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NovaMetadataNetwork]}]}
         horizon_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, HorizonNetwork]}]}
@@ -1200,6 +1209,7 @@ resources:
                 opendaylight_username: {get_input: opendaylight_username}
                 opendaylight_password: {get_input: opendaylight_password}
                 opendaylight_enable_l3: {get_input: opendaylight_enable_l3}
+                opendaylight_enable_ha: {get_input: opendaylight_enable_ha}
                 opendaylight_features: {get_input: opendaylight_features}
 
                 # ONOS
@@ -1335,6 +1345,7 @@ resources:
                 tripleo::loadbalancer::haproxy_log_address: {get_input: haproxy_log_address}
                 tripleo::packages::enable_install: {get_input: enable_package_install}
                 tripleo::packages::enable_upgrade: {get_input: enable_package_upgrade}
+                tripleo::loadbalancer::opendaylight: {get_input: opendaylight_enable_ha}
 
   # Hook for site-specific additional pre-deployment config, e.g extra hieradata
   ControllerExtraConfigPre:

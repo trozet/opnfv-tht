@@ -79,17 +79,35 @@ if 'opendaylight' in hiera('neutron_mechanism_drivers') {
 
   if str2bool(hiera('opendaylight_install', 'false')) {
     $controller_ips = split(hiera('controller_node_ips'), ',')
-    $opendaylight_controller_ip = $controller_ips[0]
+    if hiera('opendaylight_enable_ha', false) {
+      $odl_ovsdb_iface = "tcp:${controller_ips[0]}:6640 tcp:${controller_ips[1]}:6640 tcp:${controller_ips[2]}:6640"
+      # Workaround to work with current puppet-neutron
+      # This isn't the best solution, since the odl check URL ends up being only the first node in HA case
+      $opendaylight_controller_ip = $controller_ips[0]
+      # Bug where netvirt:1 doesn't come up right with HA
+      # Check ovsdb:1 instead
+      $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/ovsdb:1'
+    } else {
+      $opendaylight_controller_ip = $controller_ips[0]
+      $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
+      $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/netvirt:1'
+    }
   } else {
     $opendaylight_controller_ip = hiera('opendaylight_controller_ip')
+    $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
+    $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/netvirt:1'
   }
 
-  class { 'neutron::plugins::ovs::opendaylight':
-      odl_controller_ip => $opendaylight_controller_ip,
-      tunnel_ip         => hiera('neutron::agents::ml2::ovs::local_ip'),
-      odl_port          => hiera('opendaylight_port'),
-      odl_username      => hiera('opendaylight_username'),
-      odl_password      => hiera('opendaylight_password'),
+  $opendaylight_port = hiera('opendaylight_port')
+  $private_ip = hiera('neutron::agents::ml2::ovs::local_ip')
+  $opendaylight_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/${net_virt_url}"
+
+  class { '::neutron::plugins::ovs::opendaylight':
+    tunnel_ip             => $private_ip,
+    odl_username          => hiera('opendaylight_username'),
+    odl_password          => hiera('opendaylight_password'),
+    odl_check_url         => $opendaylight_url,
+    odl_ovsdb_iface       => $odl_ovsdb_iface,
   }
 
 } elsif 'onos_ml2' in hiera('neutron_mechanism_drivers') {

@@ -226,6 +226,10 @@ parameters:
     type: string
     description: The password for the opendaylight server.
     hidden: true
+  OpenDaylightEnableHA:
+    description: Knob to enable/disable ODL HA
+    type: boolean
+    default: false
   ONOSPort:
     default: 8181
     description: Set onos service port
@@ -433,6 +437,7 @@ resources:
                 opendaylight_port: {get_input: opendaylight_port}
                 opendaylight_username: {get_input: opendaylight_username}
                 opendaylight_password: {get_input: opendaylight_password}
+                opendaylight_enable_ha: {get_input: opendaylight_enable_ha}
                 onos_port: {get_input: onos_port}
                 neutron_flat_networks: {get_input: neutron_flat_networks}
                 neutron_host: {get_input: neutron_host}
@@ -490,6 +495,7 @@ resources:
         opendaylight_port: {get_param: OpenDaylightPort}
         opendaylight_username: {get_param: OpenDaylightUsername}
         opendaylight_password: {get_param: OpenDaylightPassword}
+        opendaylight_enable_ha: {get_param: OpenDaylightEnableHA}
         onos_port: {get_param: ONOSPort}
         neutron_flat_networks: {get_param: NeutronFlatNetworks}
         neutron_host: {get_param: NeutronHost}
