@@ -260,10 +260,8 @@ if hiera('step') >= 3 {
     }
   } else {
     include ::neutron
-    if 'opendaylight' in hiera('neutron_mechanism_drivers') {
-      if ! str2bool(hiera('opendaylight_enable_l3', 'no')) {
+    if ! ('opendaylight' in hiera('neutron_mechanism_drivers')) or ! str2bool(hiera('opendaylight_enable_l3', 'no')) {
         include ::neutron::agents::l3
-      }
     }
   }
   
