@@ -98,16 +98,28 @@ if 'opendaylight' in hiera('neutron_mechanism_drivers') {
     $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/netvirt:1'
   }
 
-  $opendaylight_port = hiera('opendaylight_port')
-  $private_ip = hiera('neutron::agents::ml2::ovs::local_ip')
-  $opendaylight_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/${net_virt_url}"
+  # co-existence hacks for SFC
+  if hiera('opendaylight_features', 'odl-ovsdb-openstack') =~ /odl-ovsdb-sfc-rest/ {
+    $opendaylight_port = hiera('opendaylight_port')
+    $odl_username = hiera('opendaylight_username')
+    $odl_password = hiera('opendaylight_password')
+    $sfc_coexist_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/restconf/config/sfc-of-renderer:sfc-of-renderer-config"
+    # Coexist for SFC
+    exec { 'Check SFC table offset has been set':
+      command   => "curl --fail --silent -u ${odl_username}:${odl_password} ${sfc_coexist_url} | grep :11 > /dev/null",
+      tries     => 15,
+      try_sleep => 60,
+      path      => '/usr/sbin:/usr/bin:/sbin:/bin',
+      before    => Class['neutron::plugins::ovs::opendaylight'],
+    }
+  }
 
-  class { '::neutron::plugins::ovs::opendaylight':
-    tunnel_ip             => $private_ip,
-    odl_username          => hiera('opendaylight_username'),
-    odl_password          => hiera('opendaylight_password'),
-    odl_check_url         => $opendaylight_url,
-    odl_ovsdb_iface       => $odl_ovsdb_iface,
+  class { 'neutron::plugins::ovs::opendaylight':
+      odl_controller_ip => $opendaylight_controller_ip,
+      tunnel_ip         => hiera('neutron::agents::ml2::ovs::local_ip'),
+      odl_port          => hiera('opendaylight_port'),
+      odl_username      => hiera('opendaylight_username'),
+      odl_password      => hiera('opendaylight_password'),
   }
 
 } elsif 'onos_ml2' in hiera('neutron_mechanism_drivers') {
