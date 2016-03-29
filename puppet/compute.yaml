@@ -230,6 +230,10 @@ parameters:
     description: Knob to enable/disable ODL HA
     type: boolean
     default: false
+  OpenDaylightFeatures:
+    description: List of features to install with ODL
+    type: comma_delimited_list
+    default: "odl-ovsdb-openstack"
   ONOSPort:
     default: 8181
     description: Set onos service port
@@ -438,6 +442,7 @@ resources:
                 opendaylight_username: {get_input: opendaylight_username}
                 opendaylight_password: {get_input: opendaylight_password}
                 opendaylight_enable_ha: {get_input: opendaylight_enable_ha}
+                opendaylight_features: {get_param: OpenDaylightFeatures}
                 onos_port: {get_input: onos_port}
                 neutron_flat_networks: {get_input: neutron_flat_networks}
                 neutron_host: {get_input: neutron_host}
@@ -496,6 +501,7 @@ resources:
         opendaylight_username: {get_param: OpenDaylightUsername}
         opendaylight_password: {get_param: OpenDaylightPassword}
         opendaylight_enable_ha: {get_param: OpenDaylightEnableHA}
+        opendaylight_features: {get_input: opendaylight_features}
         onos_port: {get_param: ONOSPort}
         neutron_flat_networks: {get_param: NeutronFlatNetworks}
         neutron_host: {get_param: NeutronHost}

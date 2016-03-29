@@ -1043,6 +1043,7 @@ resources:
           OpenDaylightUsername: {get_param: OpenDaylightUsername}
           OpenDaylightPassword: {get_param: OpenDaylightPassword}
           OpenDaylightEnableHA: {get_param: OpenDaylightEnableHA}
+          OpenDaylightFeatures: {get_param: OpenDaylightFeatures}
           RabbitHost: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, RabbitMqNetwork]}]}
           RabbitPassword: {get_param: RabbitPassword}
           RabbitUserName: {get_param: RabbitUserName}
