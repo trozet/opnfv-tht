@@ -642,7 +642,7 @@ if hiera('step') >= 3 {
     class  { 'neutron::config':
       server_config => {
         'service_providers/service_provider' => {
-          'value' => 'BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.driver_api.BGPVPNDriver:default'
+          'value' => 'BGPVPN:OpenDaylight:networking_bgpvpn.neutron.services.service_drivers.opendaylight.odl.OpenDaylightBgpvpnDriver:default'
         }
       }
     }
