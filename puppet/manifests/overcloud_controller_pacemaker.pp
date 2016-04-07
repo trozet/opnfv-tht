@@ -18,6 +18,24 @@ Pcmk_resource <| |> {
   try_sleep => 3,
 }
 
+# TODO(jistr): use pcs resource provider instead of just no-ops
+Service <|
+  tag == 'aodh-service' or
+  tag == 'cinder-service' or
+  tag == 'ceilometer-service' or
+  tag == 'glance-service' or
+  tag == 'heat-service' or
+  tag == 'keystone-service' or
+  tag == 'neutron-service' or
+  tag == 'nova-service' or
+  tag == 'sahara-service'
+|> {
+  hasrestart => true,
+  restart    => '/bin/true',
+  start      => '/bin/true',
+  stop       => '/bin/true',
+}
+
 include ::tripleo::packages
 include ::tripleo::firewall
 
@@ -167,8 +185,10 @@ if hiera('step') >= 1 {
       'bind-address'                  => $::hostname,
       'max_connections'               => hiera('mysql_max_connections'),
       'open_files_limit'              => '-1',
+      'wsrep_on'                      => 'ON',
       'wsrep_provider'                => '/usr/lib64/galera/libgalera_smm.so',
       'wsrep_cluster_name'            => 'galera_cluster',
+      'wsrep_cluster_address'         => "gcomm://${galera_nodes}",
       'wsrep_slave_threads'           => '1',
       'wsrep_certify_nonPK'           => '1',
       'wsrep_max_ws_rows'             => '131072',
@@ -772,6 +792,14 @@ if hiera('step') >= 3 {
       midonet_api_ip    => hiera('tripleo::loadbalancer::public_virtual_ip'),
       keystone_tenant   => hiera('neutron::server::auth_tenant'),
       keystone_password => hiera('neutron::server::auth_password')
+    }
+  }
+  if hiera('neutron::core_plugin') == 'networking_plumgrid.neutron.plugins.plugin.NeutronPluginPLUMgridV2' {
+    class { '::neutron::plugins::plumgrid' :
+      connection                   => hiera('neutron::server::database_connection'),
+      controller_priv_host         => hiera('keystone_admin_api_vip'),
+      admin_password               => hiera('admin_password'),
+      metadata_proxy_shared_secret => hiera('nova::api::neutron_metadata_proxy_shared_secret'),
     }
   }
   if hiera('neutron::enable_dhcp_agent',true) {
