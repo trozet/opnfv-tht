@@ -381,18 +381,10 @@ if hiera('step') >= 2 {
   }
 
   if str2bool(hiera('opendaylight_install', 'false')) {
-    $node_string = split(hiera('bootstack_nodeid'), '-')
-    $controller_index = $node_string[-1]
-    $ha_node_index = $controller_index + 1
-
     class {"opendaylight":
       extra_features => any2array(hiera('opendaylight_features', 'odl-ovsdb-openstack')),
       odl_rest_port  => hiera('opendaylight_port'),
-      odl_bind_ip    => $controller_node_ips[$controller_index],
       enable_l3      => hiera('opendaylight_enable_l3', 'no'),
-      enable_ha      => hiera('opendaylight_enable_ha', false),
-      ha_node_ips    => split(hiera('controller_node_ips'), ','),
-      ha_node_index  => $ha_node_index,
     }
   }
 
@@ -656,48 +648,30 @@ if hiera('step') >= 3 {
   if 'opendaylight' in hiera('neutron_mechanism_drivers') {
     if str2bool(hiera('opendaylight_install', 'false')) {
       $controller_ips = split(hiera('controller_node_ips'), ',')
-      if hiera('opendaylight_enable_ha', false) {
-        $odl_ovsdb_iface = "tcp:${controller_ips[0]}:6640 tcp:${controller_ips[1]}:6640 tcp:${controller_ips[2]}:6640"
-        # Workaround to work with current puppet-neutron
-        # This isn't the best solution, since the odl check URL ends up being only the first node in HA case
-        $opendaylight_controller_ip = $controller_ips[0]
-        # Bug where netvirt:1 doesn't come up right with HA
-        # Check ovsdb:1 instead
-        $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/ovsdb:1'
-      } else {
-        $opendaylight_controller_ip = $controller_ips[0]
-        $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
-        $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/netvirt:1'
-      }
+      $opendaylight_controller_ip = $controller_ips[0]
     } else {
       $opendaylight_controller_ip = hiera('opendaylight_controller_ip')
-      $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
-      $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/netvirt:1'
     }
 
     $opendaylight_port = hiera('opendaylight_port')
     $private_ip = hiera('neutron::agents::ml2::ovs::local_ip')
-    $opendaylight_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/${net_virt_url}"
-    $odl_vip = hiera('opendaylight_api_vip')
 
-    if ! $odl_vip {
-      fail('ODL VIP not set in hiera or empty')
+    class { 'neutron::plugins::ml2::opendaylight':
+      odl_controller_ip => $opendaylight_controller_ip,
+      odl_username      => hiera('opendaylight_username'),
+      odl_password      => hiera('opendaylight_password'),
+      odl_port          => hiera('opendaylight_port'),
     }
 
-    class { '::neutron::plugins::ml2::opendaylight':
-      odl_username  => hiera('opendaylight_username'),
-      odl_password  => hiera('opendaylight_password'),
-      odl_url => "http://${odl_vip}:${opendaylight_port}/controller/nb/v2/neutron";
+    if str2bool(hiera('opendaylight_install', 'false')) {
+      class { 'neutron::plugins::ovs::opendaylight':
+        odl_controller_ip => $opendaylight_controller_ip,
+        tunnel_ip         => hiera('neutron::agents::ml2::ovs::local_ip'),
+        odl_port          => hiera('opendaylight_port'),
+        odl_username      => hiera('opendaylight_username'),
+        odl_password      => hiera('opendaylight_password'),
+      }
     }
-
-    class { '::neutron::plugins::ovs::opendaylight':
-      tunnel_ip             => $private_ip,
-      odl_username          => hiera('opendaylight_username'),
-      odl_password          => hiera('opendaylight_password'),
-      odl_check_url         => $opendaylight_url,
-      odl_ovsdb_iface       => $odl_ovsdb_iface,
-    }
-
     if ! str2bool(hiera('opendaylight_enable_l3', 'no')) {
       class { '::neutron::agents::l3' :
         manage_service => false,

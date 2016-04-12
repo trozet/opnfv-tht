@@ -307,23 +307,21 @@ if hiera('step') >= 3 {
       }
     }
 
-    $private_ip = hiera('neutron::agents::ml2::ovs::local_ip')
-    $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/netvirt:1'
-    $opendaylight_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/${net_virt_url}"
-    $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
-
-    class { '::neutron::plugins::ml2::opendaylight':
-      odl_username  => hiera('opendaylight_username'),
-      odl_password  => hiera('opendaylight_password'),
-      odl_url => "http://${opendaylight_controller_ip}:${opendaylight_port}/controller/nb/v2/neutron";
+    class { 'neutron::plugins::ml2::opendaylight':
+      odl_controller_ip => $opendaylight_controller_ip,
+      odl_username      => hiera('opendaylight_username'),
+      odl_password      => hiera('opendaylight_password'),
+      odl_port          => hiera('opendaylight_port'),
     }
 
-    class { '::neutron::plugins::ovs::opendaylight':
-      tunnel_ip             => $private_ip,
-      odl_username          => hiera('opendaylight_username'),
-      odl_password          => hiera('opendaylight_password'),
-      odl_check_url         => $opendaylight_url,
-      odl_ovsdb_iface       => $odl_ovsdb_iface,
+    if str2bool(hiera('opendaylight_install', 'false')) {
+      class { 'neutron::plugins::ovs::opendaylight':
+        odl_controller_ip => $opendaylight_controller_ip,
+        tunnel_ip         => hiera('neutron::agents::ml2::ovs::local_ip'),
+        odl_port          => hiera('opendaylight_port'),
+        odl_username      => hiera('opendaylight_username'),
+        odl_password      => hiera('opendaylight_password'),
+      }
     }
 
   } elsif 'onos_ml2' in hiera('neutron_mechanism_drivers') {
