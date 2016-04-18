@@ -372,6 +372,10 @@ parameters:
     default: false
     description: Whether to deploy Ceph Storage (OSD) on the Controller
     type: boolean
+  ComputeEnableCephStorage:
+    default: false
+    description: Whether to deploy Ceph Storage (OSD) on the Compute Nodes
+    type: boolean
   ControllerEnableSwiftStorage:
     default: true
     description: Whether to enable Swift Storage on the Controller
@@ -874,7 +878,8 @@ resources:
           Debug: {get_param: Debug}
           EnableFencing: {get_param: EnableFencing}
           EnableGalera: {get_param: EnableGalera}
-          EnableCephStorage: {get_param: ControllerEnableCephStorage}
+          ControllerEnableCephStorage: {get_param: ControllerEnableCephStorage}
+          ComputeEnableCephStorage: {get_param: ComputeEnableCephStorage}
           EnableSwiftStorage: {get_param: ControllerEnableSwiftStorage}
           ExtraConfig: {get_param: ExtraConfig}
           FencingConfig: {get_param: FencingConfig}
@@ -994,6 +999,7 @@ resources:
           CeilometerPassword: {get_param: CeilometerPassword}
           CinderEnableNfsBackend: {get_param: CinderEnableNfsBackend}
           CinderEnableRbdBackend: {get_param: CinderEnableRbdBackend}
+          ComputeEnableCephStorage: {get_param: ComputeEnableCephStorage}
           Debug: {get_param: Debug}
           ExtraConfig: {get_param: ExtraConfig}
           Flavor: {get_param: OvercloudComputeFlavor}
@@ -1325,6 +1331,7 @@ resources:
 
   ComputeCephDeployment:
     type: OS::Heat::StructuredDeployments
+    depends_on: ControllerNodesPostDeployment
     properties:
       config: {get_attr: [CephClusterConfig, config_id]}
       servers: {get_attr: [Compute, attributes, nova_server_resource]}

@@ -43,6 +43,10 @@ parameter_defaults:
   ## OSDs are deployed on dedicated ceph-storage nodes only.
   # ControllerEnableCephStorage: false
 
+  ## Whether to deploy Ceph OSDs on the compute nodes. By default
+  ## OSDs are deployed on dedicated ceph-storage nodes only.
+  ComputeEnableCephStorage: true
+
   ## When deploying Ceph through the oscplugin CLI, the following
   ## parameters are set automatically by the CLI. When deploying via
   ## heat stack-create, they need to be provided manually.

@@ -93,6 +93,14 @@ parameters:
     description: |
       Controller specific hiera configuration data to inject into the cluster.
     type: json
+  ControllerEnableCephStorage:
+    default: false
+    description: Whether to deploy Ceph Storage (OSD) on the Controller
+    type: boolean
+  ComputeEnableCephStorage:
+    default: false
+    description: Whether to deploy Ceph Storage (OSD) on the Compute Nodes
+    type: boolean
   ControlVirtualInterface:
     default: 'br-ex'
     description: Interface where virtual ip will be assigned.
@@ -108,10 +116,6 @@ parameters:
   EnableGalera:
     default: true
     description: Whether to use Galera instead of regular MariaDB.
-    type: boolean
-  EnableCephStorage:
-    default: false
-    description: Whether to deploy Ceph Storage (OSD) on the Controller
     type: boolean
   EnableSwiftStorage:
     default: true
@@ -838,7 +842,8 @@ resources:
         keystone_ec2_uri: { get_param: [EndpointMap, KeystoneEC2, uri] }
         enable_fencing: {get_param: EnableFencing}
         enable_galera: {get_param: EnableGalera}
-        enable_ceph_storage: {get_param: EnableCephStorage}
+        enable_ceph_storage: {get_param: ControllerEnableCephStorage}
+        compute_enable_ceph_storage: {get_param: ComputeEnableCephStorage}
         enable_swift_storage: {get_param: EnableSwiftStorage}
         mysql_innodb_buffer_pool_size: {get_param: MysqlInnodbBufferPoolSize}
         mysql_max_connections: {get_param: MysqlMaxConnections}
@@ -1186,6 +1191,7 @@ resources:
                 admin_password: {get_input: admin_password}
                 enable_galera: {get_input: enable_galera}
                 enable_ceph_storage: {get_input: enable_ceph_storage}
+                compute_enable_ceph_storage: {get_input: compute_enable_ceph_storage}
                 enable_swift_storage: {get_input: enable_swift_storage}
                 mysql_innodb_buffer_pool_size: {get_input: mysql_innodb_buffer_pool_size}
                 mysql_max_connections: {get_input: mysql_max_connections}
