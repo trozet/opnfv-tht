@@ -552,7 +552,7 @@ MYSQL_HOST=localhost\n",
   include ::swift
 
   # Ceph
-  $enable_ceph = hiera('ceph_storage_count', 0) > 0 or hiera('enable_ceph_storage', false)
+  $enable_ceph = hiera('ceph_storage_count', 0) > 0 or hiera('enable_ceph_storage', false) or hiera('compute_enable_ceph_storage', false)
 
   if $enable_ceph {
     $mon_initial_members = downcase(hiera('ceph_mon_initial_members'))

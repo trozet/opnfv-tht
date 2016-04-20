@@ -114,6 +114,14 @@ parameters:
         ...
       }
     type: json
+  ControllerEnableCephStorage:
+    default: false
+    description: Whether to deploy Ceph Storage (OSD) on the Controller
+    type: boolean
+  ComputeEnableCephStorage:
+    default: false
+    description: Whether to deploy Ceph Storage (OSD) on the Compute Nodes
+    type: boolean
   ControlVirtualInterface:
     default: 'br-ex'
     description: Interface where virtual ip will be assigned.
@@ -137,10 +145,6 @@ parameters:
   EnableLoadBalancer:
     default: true
     description: Whether to deploy a LoadBalancer on the Controller
-    type: boolean
-  EnableCephStorage:
-    default: false
-    description: Whether to deploy Ceph Storage (OSD) on the Controller
     type: boolean
   EnableSwiftStorage:
     default: true
@@ -1063,7 +1067,8 @@ resources:
         enable_fencing: {get_param: EnableFencing}
         enable_galera: {get_param: EnableGalera}
         enable_load_balancer: {get_param: EnableLoadBalancer}
-        enable_ceph_storage: {get_param: EnableCephStorage}
+        enable_ceph_storage: {get_param: ControllerEnableCephStorage}
+        compute_enable_ceph_storage: {get_param: ComputeEnableCephStorage}
         enable_swift_storage: {get_param: EnableSwiftStorage}
         manage_firewall: {get_param: ManageFirewall}
         purge_firewall_rules: {get_param: PurgeFirewallRules}
@@ -1480,6 +1485,7 @@ resources:
                 admin_password: {get_input: admin_password}
                 enable_galera: {get_input: enable_galera}
                 enable_ceph_storage: {get_input: enable_ceph_storage}
+                compute_enable_ceph_storage: {get_input: compute_enable_ceph_storage}
                 enable_swift_storage: {get_input: enable_swift_storage}
                 mysql_innodb_buffer_pool_size: {get_input: mysql_innodb_buffer_pool_size}
                 mysql_max_connections: {get_input: mysql_max_connections}
