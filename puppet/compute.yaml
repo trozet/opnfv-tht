@@ -359,6 +359,15 @@ resources:
       TenantIp: {get_attr: [TenantPort, ip_address]}
       ExternalIp: {get_attr: [ExternalPort, ip_address]}
 
+  NetIpSubnetMap:
+    type: OS::TripleO::Network::Ports::NetIpSubnetMap
+    properties:
+      ControlPlaneIp: {get_attr: [NovaCompute, networks, ctlplane, 0]}
+      ExternalIpSubnet: {get_attr: [ExternalPort, ip_subnet]}
+      InternalApiIpSubnet: {get_attr: [InternalApiPort, ip_subnet]}
+      StorageIpSubnet: {get_attr: [StoragePort, ip_subnet]}
+      TenantIpSubnet: {get_attr: [TenantPort, ip_subnet]}
+
   NetworkConfig:
     type: OS::TripleO::Compute::Net::SoftwareConfig
     properties:
@@ -450,6 +459,7 @@ resources:
 
                 neutron_tenant_network_type: {get_input: neutron_tenant_network_type}
                 neutron_tunnel_types: {get_input: neutron_tunnel_types}
+                neutron_tenant_network: {get_input: neutron_tenant_network}
                 neutron::plugins::ml2::network_vlan_ranges: {get_input: neutron_network_vlan_ranges}
                 neutron::plugins::ml2::tunnel_id_ranges: {get_input: neutron_tunnel_id_ranges}
                 neutron::plugins::ml2::vni_ranges: {get_input: neutron_vni_ranges}
@@ -508,6 +518,7 @@ resources:
         neutron_local_ip: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NeutronTenantNetwork]}]}
         neutron_tenant_network_type: {get_param: NeutronNetworkType}
         neutron_tunnel_types: {get_param: NeutronTunnelTypes}
+        neutron_tenant_network: {get_attr: [NetIpSubnetMap, net_ip_subnet_map, {get_param: [ServiceNetMap, NeutronTenantNetwork]}]}
         neutron_tunnel_id_ranges:
           str_replace:
             template: "['RANGES']"

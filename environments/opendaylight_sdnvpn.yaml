@@ -16,7 +16,7 @@ parameters:
     # increase this if you need more ODL nodes
     # OpenDaylightCount: 1
     ControllerEnableSwiftStorage: false
-    OpenDaylightFeatures: "odl-ovsdb-openstack,odl-vpnservice-api,odl-vpnservice-impl,odl-vpnservice-impl-rest,odl-vpnservice-impl-ui,odl-vpnservice-core"
+    OpenDaylightFeatures: "odl-vpnservice-openstack"
     NeutronL3HA: false
     NeutronServicePlugins: "router,qos,networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin"
     ExtraConfig:

@@ -1009,6 +1009,7 @@ resources:
         mongo_db_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, MongoDbNetwork]}]}
         neutron_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NeutronApiNetwork]}]}
         neutron_local_ip: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NeutronTenantNetwork]}]}
+        neutron_tenant_network: {get_attr: [NetIpSubnetMap, net_ip_subnet_map, {get_param: [ServiceNetMap, NeutronTenantNetwork]}]}
         ceilometer_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, CeilometerApiNetwork]}]}
         aodh_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, AodhApiNetwork]}]}
         nova_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NovaApiNetwork]}]}
@@ -1229,6 +1230,7 @@ resources:
                 neutron::agents::metadata::metadata_ip: {get_input: neutron_api_network}
                 neutron::agents::dhcp::enable_force_metadata: {get_input: neutron_enable_force_metadata}
                 neutron_agent_mode: {get_input: neutron_agent_mode}
+                neutron_tenant_network: {get_input: neutron_tenant_network}
                 neutron_router_distributed: {get_input: neutron_router_distributed}
                 neutron::core_plugin: {get_input: neutron_core_plugin}
                 neutron::service_plugins: {get_input: neutron_service_plugins}

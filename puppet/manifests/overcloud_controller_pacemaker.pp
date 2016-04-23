@@ -664,12 +664,41 @@ if hiera('step') >= 3 {
     }
 
     if str2bool(hiera('opendaylight_install', 'false')) {
-      class { 'neutron::plugins::ovs::opendaylight':
-        odl_controller_ip => $opendaylight_controller_ip,
-        tunnel_ip         => hiera('neutron::agents::ml2::ovs::local_ip'),
-        odl_port          => hiera('opendaylight_port'),
-        odl_username      => hiera('opendaylight_username'),
-        odl_password      => hiera('opendaylight_password'),
+      if hiera('opendaylight_features', 'odl-ovsdb-openstack') =~ /odl-vpnservice-openstack/ {
+        $odl_tunneling_ip = hiera('neutron::agents::ml2::ovs::local_ip')
+        $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
+        $private_network = hiera('neutron_tenant_network')
+        $cidr_arr = split($private_network, '/')
+        $private_mask = $cidr_arr[1]
+        $private_subnet = inline_template("<%= require 'ipaddr'; IPAddr.new('$private_network').mask('$private_mask') -%>")
+        $odl_port = hiera('opendaylight_port')
+        $file_setupTEPs = '/tmp/setup_TEPs.py'
+        $astute_yaml = "network_metadata:
+  vips:
+    management:
+      ipaddr: ${opendaylight_controller_ip}
+opendaylight:
+  rest_api_port: ${odl_port}
+  bgpvpn_gateway: 11.0.0.254
+private_network_range: ${private_subnet}/${private_mask}"
+
+        file { '/etc/astute.yaml':
+          content => $astute_yaml,
+        }
+        exec { 'setup_TEPs':
+          # At the moment the connection between ovs and ODL is no HA if vpnfeature is activated
+          command => "python $file_setupTEPs $opendaylight_controller_ip $odl_tunneling_ip $odl_ovsdb_iface",
+          require => File['/etc/astute.yaml'],
+          path => '/usr/local/bin:/usr/bin:/sbin:/bin:/usr/local/sbin:/usr/sbin',
+        }
+      } else {
+        class { 'neutron::plugins::ovs::opendaylight':
+          odl_controller_ip => $opendaylight_controller_ip,
+          tunnel_ip         => hiera('neutron::agents::ml2::ovs::local_ip'),
+          odl_port          => hiera('opendaylight_port'),
+          odl_username      => hiera('opendaylight_username'),
+          odl_password      => hiera('opendaylight_password'),
+        }
       }
     }
     if ! str2bool(hiera('opendaylight_enable_l3', 'no')) {
