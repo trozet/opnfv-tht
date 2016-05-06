@@ -1,0 +1,9 @@
+parameters:
+    #This a bug for odl deployment. Once bug fixed OpenDaylightCount can be remove.
+    OpenDaylightCount: 0
+    NeutronL3HA: false
+    NeutronServicePlugins: "onos_router"
+    NeutronEnableL3Agent: false
+    ExtraConfig:
+      neutron_mechanism_drivers: ['onos_ml2']
+      neutron_tenant_network_type: vxlan

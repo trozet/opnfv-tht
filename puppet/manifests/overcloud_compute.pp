@@ -188,28 +188,117 @@ elsif hiera('neutron::core_plugin') == 'networking_plumgrid.neutron.plugins.plug
 }
 else {
 
-  # NOTE: this code won't live in puppet-neutron until Neutron OVS agent
-  # can be gracefully restarted. See https://review.openstack.org/#/c/297211
-  # In the meantime, it's safe to restart the agent on each change in neutron.conf,
-  # because Puppet changes are supposed to be done during bootstrap and upgrades.
-  # Some resource managed by Neutron_config (like messaging and logging options) require
-  # a restart of OVS agent. This code does it.
-  # In Newton, OVS agent will be able to be restarted gracefully so we'll drop the code
-  # from here and fix it in puppet-neutron.
-  Neutron_config<||> ~> Service['neutron-ovs-agent-service']
-
   include ::neutron::plugins::ml2
-  include ::neutron::agents::ml2::ovs
 
-  if 'cisco_n1kv' in hiera('neutron::plugins::ml2::mechanism_drivers') {
-    class { '::neutron::agents::n1kv_vem':
-      n1kv_source  => hiera('n1kv_vem_source', undef),
-      n1kv_version => hiera('n1kv_vem_version', undef),
+  if 'opendaylight' in hiera('neutron::plugins::ml2::mechanism_drivers') {
+
+    if str2bool(hiera('opendaylight_install', 'false')) {
+      $controller_ips = split(hiera('controller_node_ips'), ',')
+      $opendaylight_controller_ip = $controller_ips[0]
+      if hiera('opendaylight_enable_ha', false) {
+        $odl_ovsdb_iface = "tcp:${controller_ips[0]}:6640 tcp:${controller_ips[1]}:6640 tcp:${controller_ips[2]}:6640"
+        # Workaround to work with current puppet-neutron
+        # This isn't the best solution, since the odl check URL ends up being only the first node in HA case
+        $opendaylight_controller_ip = $controller_ips[0]
+        # Bug where netvirt:1 doesn't come up right with HA
+        # Check ovsdb:1 instead
+        $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/ovsdb:1'
+      } else {
+        $opendaylight_controller_ip = $controller_ips[0]
+        $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
+        $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/netvirt:1'
+      }
+    } else {
+      $opendaylight_controller_ip = hiera('opendaylight_controller_ip')
+      $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
+      $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/netvirt:1'
     }
-  }
 
-  if 'bsn_ml2' in hiera('neutron::plugins::ml2::mechanism_drivers') {
-    include ::neutron::agents::bigswitch
+    $opendaylight_port = hiera('opendaylight_port')
+    $private_ip = hiera('neutron::agents::ml2::ovs::local_ip')
+    $opendaylight_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/${net_virt_url}"
+
+    # co-existence hacks for SFC
+    if hiera('opendaylight_features', 'odl-ovsdb-openstack') =~ /odl-ovsdb-sfc-rest/ {
+      $odl_username = hiera('opendaylight_username')
+      $odl_password = hiera('opendaylight_password')
+      $sfc_coexist_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/restconf/config/sfc-of-renderer:sfc-of-renderer-config"
+      # Coexist for SFC
+      exec { 'Check SFC table offset has been set':
+        command   => "curl --fail --silent -u ${odl_username}:${odl_password} ${sfc_coexist_url} | grep :11 > /dev/null",
+        tries     => 15,
+        try_sleep => 60,
+        path      => '/usr/sbin:/usr/bin:/sbin:/bin',
+        before    => Class['neutron::plugins::ovs::opendaylight'],
+      }
+    }
+
+    if hiera('opendaylight_features', 'odl-ovsdb-openstack') =~ /odl-vpnservice-openstack/ {
+      $odl_tunneling_ip = hiera('neutron::agents::ml2::ovs::local_ip')
+      $private_network = hiera('neutron_tenant_network')
+      $cidr_arr = split($private_network, '/')
+      $private_mask = $cidr_arr[1]
+      $private_subnet = inline_template("<%= require 'ipaddr'; IPAddr.new('$private_network').mask('$private_mask') -%>")
+      $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
+      $odl_port = hiera('opendaylight_port')
+      $file_setupTEPs = '/tmp/setup_TEPs.py'
+      $astute_yaml = "network_metadata:
+  vips:
+    management:
+      ipaddr: ${opendaylight_controller_ip}
+opendaylight:
+  rest_api_port: ${odl_port}
+  bgpvpn_gateway: 11.0.0.254
+private_network_range: ${private_subnet}/${private_mask}"
+
+      file { '/etc/astute.yaml':
+        content => $astute_yaml,
+      }
+      exec { 'setup_TEPs':
+        # At the moment the connection between ovs and ODL is no HA if vpnfeature is activated
+        command => "python $file_setupTEPs $opendaylight_controller_ip $odl_tunneling_ip $odl_ovsdb_iface",
+        require => File['/etc/astute.yaml'],
+        path => '/usr/local/bin:/usr/bin:/sbin:/bin:/usr/local/sbin:/usr/sbin',
+      }
+    } else {
+      class { '::neutron::plugins::ovs::opendaylight':
+        tunnel_ip             => $private_ip,
+        odl_username          => hiera('opendaylight_username'),
+        odl_password          => hiera('opendaylight_password'),
+        odl_check_url         => $opendaylight_url,
+        odl_ovsdb_iface       => $odl_ovsdb_iface,
+      }
+    }
+  } elsif 'onos_ml2' in hiera('neutron::plugins::ml2::mechanism_drivers') {
+    $controller_ips = split(hiera('controller_node_ips'), ',')
+    class { 'onos::ovs_computer':
+      manager_ip => $controller_ips[0]
+    }
+
+  } else {
+    
+    # NOTE: this code won't live in puppet-neutron until Neutron OVS agent
+    # can be gracefully restarted. See https://review.openstack.org/#/c/297211
+    # In the meantime, it's safe to restart the agent on each change in neutron.conf,
+    # because Puppet changes are supposed to be done during bootstrap and upgrades.
+    # Some resource managed by Neutron_config (like messaging and logging options) require
+    # a restart of OVS agent. This code does it.
+    # In Newton, OVS agent will be able to be restarted gracefully so we'll drop the code
+    # from here and fix it in puppet-neutron.
+    Neutron_config<||> ~> Service['neutron-ovs-agent-service']
+
+    include ::neutron::agents::ml2::ovs
+
+    if 'cisco_n1kv' in hiera('neutron::plugins::ml2::mechanism_drivers') {
+      class { '::neutron::agents::n1kv_vem':
+        n1kv_source  => hiera('n1kv_vem_source', undef),
+        n1kv_version => hiera('n1kv_vem_version', undef),
+      }
+    }
+
+    if 'bsn_ml2' in hiera('neutron::plugins::ml2::mechanism_drivers') {
+      include ::neutron::agents::bigswitch
+    }
   }
 }
 

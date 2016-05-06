@@ -8,6 +8,8 @@ parameters:
     type: comma_delimited_list
   controller_ips:
     type: comma_delimited_list
+  opendaylight_ip:
+    type: comma_delimited_list
   block_storage_hosts:
     type: comma_delimited_list
   object_storage_hosts:
@@ -35,6 +37,8 @@ parameters:
   ceilometer_api_node_ips:
     type: comma_delimited_list
   aodh_api_node_ips:
+    type: comma_delimited_list
+  opendaylight_api_node_ips:
     type: comma_delimited_list
   nova_api_node_ips:
     type: comma_delimited_list
@@ -97,6 +101,10 @@ resources:
               raw_data: {get_file: hieradata/RedHat.yaml}
             all_nodes:
               mapped_data:
+                opendaylight_controller_ip:
+                  list_join:
+                  - ','
+                  - {get_param: opendaylight_ip}
                 controller_node_ips:
                   list_join:
                   - ','
@@ -197,6 +205,14 @@ resources:
                         list_join:
                         - "','"
                         - {get_param: aodh_api_node_ips}
+                opendaylight_api_node_ips:
+                  str_replace:
+                    template: "['SERVERS_LIST']"
+                    params:
+                      SERVERS_LIST:
+                        list_join:
+                        - "','"
+                        - {get_param: opendaylight_api_node_ips}
                 nova_api_node_ips:
                   str_replace:
                     template: "['SERVERS_LIST']"

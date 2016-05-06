@@ -32,6 +32,9 @@ resource_registry:
   # To disable, replace with firstboot/userdata_default.yaml
   OS::TripleO::NodeAdminUserData: firstboot/userdata_heat_admin.yaml
 
+  # This configures OpenDaylight to drive the network
+  OS::TripleO::OpenDaylightNode: puppet/opendaylight-puppet.yaml
+
   # Hooks for operator extra config
   # NodeUserData == Cloud-init additional user-data, e.g cloud-config
   # ControllerExtraConfigPre == Controller configuration pre service deployment

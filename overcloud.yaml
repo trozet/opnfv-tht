@@ -134,6 +134,10 @@ parameters:
     default: 'False'
     description: If True, DHCP provide metadata route to VM.
     type: string
+  NeutronEnableForceMetadata:
+    default: 'False'
+    description: If True, DHCP always provides metadata route to VM.
+    type: string
   NeutronEnableTunnelling:
     type: string
     default: "True"
@@ -573,6 +577,35 @@ parameters:
     default: ''
     description: If set, the public interface is a vlan with this device as the raw device.
     type: string
+  OpenDaylightPort:
+    default: 8081
+    description: Set opendaylight service port
+    type: number
+  OpenDaylightInstall:
+    default: false
+    description: Whether to install OpenDaylight on the control nodes.
+    type: boolean
+  OpenDaylightUsername:
+    default: 'admin'
+    description: The username for the opendaylight server.
+    type: string
+  OpenDaylightPassword:
+    default: 'admin'
+    type: string
+    description: The password for the opendaylight server.
+  OpenDaylightEnableL3:
+    description: Knob to enable/disable ODL L3
+    type: string
+    default: 'no'
+  OpenDaylightFeatures:
+    description: List of features to install with ODL
+    type: comma_delimited_list
+    default: "odl-ovsdb-openstack"
+  OpenDaylightEnableHA:
+    description: Knob to enable/disable ODL HA
+    type: boolean
+    default: false
+
   PublicVirtualInterface:
     default: 'br-ex'
     description: >
@@ -696,6 +729,7 @@ parameters:
       NovaApiNetwork: internal_api
       NovaMetadataNetwork: internal_api
       NovaVncProxyNetwork: internal_api
+      OpenDaylightApiNetwork: internal_api
       SwiftMgmtNetwork: storage_mgmt
       SwiftProxyNetwork: storage
       SaharaApiNetwork: internal_api
@@ -788,6 +822,17 @@ parameters:
     description: Optional scheduler hints to pass to nova
     default: {}
 
+# OpenDaylight specific parameters
+  OpenDaylightCount:
+    type: number
+    default: 0
+  OpenDaylightImage:
+    default: overcloud-full
+    type: string
+  OpenDaylightFlavor:
+    default: baremetal
+    description: Flavor for OpenDaylight node
+    type: string
 
   # Hostname format for each role
   # Note %index% is translated into the index of the node, e.g 0/1/2 etc
@@ -813,6 +858,10 @@ parameters:
     type: string
     description: Format for CephStorage node hostnames
     default: '%stackname%-cephstorage-%index%'
+  OpenDaylightHostnameFormat:
+    type: string
+    description: Format for OpenDaylight node hostnames
+    default: '%stackname%-opendaylight-%index%'
 
   # Identifiers to trigger tasks on nodes
   UpdateIdentifier:
@@ -895,6 +944,29 @@ resources:
       SaharaApiVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, SaharaApiNetwork]}]}
       SwiftProxyVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, SwiftProxyNetwork]}]}
       PublicVirtualIP: {get_attr: [VipMap, net_ip_uri_map, external]}
+
+  OpenDaylightNode:
+    type: OS::Heat::ResourceGroup
+    depends_on: Networks
+    properties:
+      count: {get_param: OpenDaylightCount}
+      removal_policies: {get_param: ComputeRemovalPolicies}
+      resource_def:
+        type: OS::TripleO::OpenDaylightNode
+        properties:
+          UpdateIdentifier: {get_param: UpdateIdentifier}
+          OpenDaylightFlavor: {get_param: OpenDaylightFlavor}
+          OpenDaylightImage: {get_param: OpenDaylightImage}
+          OpenDaylightPort: {get_param: OpenDaylightPort}
+          OpenDaylightUsername: {get_param: OpenDaylightUsername}
+          OpenDaylightPassword: {get_param: OpenDaylightPassword}
+          OpenDaylightEnableL3: {get_param: OpenDaylightEnableL3}
+          OpenDaylightFeatures: {get_param: OpenDaylightFeatures}
+          OpenDaylightHostname:
+            str_replace:
+              template: {get_param: OpenDaylightHostnameFormat}
+              params:
+                '%stackname%': {get_param: 'OS::stack_name'}
 
   Controller:
     type: OS::Heat::ResourceGroup
@@ -992,11 +1064,19 @@ resources:
           NeutronDhcpAgentsPerNetwork: {get_param: NeutronDhcpAgentsPerNetwork}
           NeutronNetworkType: {get_param: NeutronNetworkType}
           NeutronTunnelTypes: {get_param: NeutronTunnelTypes}
+          NeutronEnableForceMetadata: {get_param: NeutronEnableForceMetadata}
           NovaIPv6: {get_param: NovaIPv6}
           NovaPassword: {get_param: NovaPassword}
           NtpServer: {get_param: NtpServer}
           MongoDbNoJournal: {get_param: MongoDbNoJournal}
           MongoDbIPv6: {get_param: MongoDbIPv6}
+          OpenDaylightPort: {get_param: OpenDaylightPort}
+          OpenDaylightInstall: {get_param: OpenDaylightInstall}
+          OpenDaylightUsername: {get_param: OpenDaylightUsername}
+          OpenDaylightPassword: {get_param: OpenDaylightPassword}
+          OpenDaylightEnableL3: {get_param: OpenDaylightEnableL3}
+          OpenDaylightFeatures: {get_param: OpenDaylightFeatures}
+          OpenDaylightEnableHA: {get_param: OpenDaylightEnableHA}
           PcsdPassword: {get_resource: PcsdPassword}
           PublicVirtualInterface: {get_param: PublicVirtualInterface}
           RabbitPassword: {get_param: RabbitPassword}
@@ -1037,6 +1117,7 @@ resources:
           KeystoneAdminApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, KeystoneAdminApiNetwork]}]}
           KeystonePublicApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, KeystonePublicApiNetwork]}]}
           NeutronApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, NeutronApiNetwork]}]}
+          OpenDaylightApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, OpenDaylightApiNetwork]}]}
           NovaApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, NovaApiNetwork]}]}
           SaharaApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, SaharaApiNetwork]}]}
           UpdateIdentifier: {get_param: UpdateIdentifier}
@@ -1110,6 +1191,11 @@ resources:
           NovaOVSBridge: {get_param: NovaOVSBridge}
           NovaSecurityGroupAPI: {get_param: NovaSecurityGroupAPI}
           NtpServer: {get_param: NtpServer}
+          OpenDaylightPort: {get_param: OpenDaylightPort}
+          OpenDaylightUsername: {get_param: OpenDaylightUsername}
+          OpenDaylightPassword: {get_param: OpenDaylightPassword}
+          OpenDaylightEnableHA: {get_param: OpenDaylightEnableHA}
+          OpenDaylightFeatures: {get_param: OpenDaylightFeatures}
           RabbitHost: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, RabbitMqNetwork]}]}
           RabbitPassword: {get_param: RabbitPassword}
           RabbitUserName: {get_param: RabbitUserName}
@@ -1251,6 +1337,7 @@ resources:
       compute_hosts: {get_attr: [Compute, hosts_entry]}
       controller_hosts: {get_attr: [Controller, hosts_entry]}
       controller_ips: {get_attr: [Controller, ip_address]}
+      opendaylight_ip: {get_attr: [OpenDaylightNode, ip_address]}
       block_storage_hosts: {get_attr: [BlockStorage, hosts_entry]}
       object_storage_hosts: {get_attr: [ObjectStorage, hosts_entry]}
       ceph_storage_hosts: {get_attr: [CephStorage, hosts_entry]}
@@ -1271,6 +1358,7 @@ resources:
       glance_registry_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, GlanceRegistryNetwork]}]}
       cinder_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, CinderApiNetwork]}]}
       neutron_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, NeutronApiNetwork]}]}
+      opendaylight_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, OpenDaylightApiNetwork]}]}
       keystone_public_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, KeystonePublicApiNetwork]}]}
       keystone_admin_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, KeystoneAdminApiNetwork]}]}
       sahara_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, SaharaApiNetwork]}]}
@@ -1384,6 +1472,7 @@ resources:
         swift_proxy_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, SwiftProxyNetwork]}]}
         nova_api_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, NovaApiNetwork]}]}
         nova_metadata_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, NovaMetadataNetwork]}]}
+        opendaylight_api_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, OpenDaylightApiNetwork]}]}
         ceilometer_api_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, CeilometerApiNetwork]}]}
         aodh_api_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, AodhApiNetwork]}]}
         heat_api_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, HeatApiNetwork]}]}

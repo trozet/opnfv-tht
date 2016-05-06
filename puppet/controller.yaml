@@ -470,6 +470,10 @@ parameters:
     default: 'False'
     description: If True, DHCP provide metadata route to VM.
     type: string
+  NeutronEnableForceMetadata:
+    default: 'False'
+    description: If True, DHCP always provides metadata route to VM.
+    type: string
   NeutronEnableTunnelling:
     type: string
     default: "True"
@@ -599,6 +603,42 @@ parameters:
     default: ''
     description: Comma-separated list of ntp servers
     type: comma_delimited_list
+  OpenDaylightPort:
+    default: 8081
+    description: Set opendaylight service port
+    type: number
+  OpenDaylightInstall:
+    default: false
+    description: Whether to install OpenDaylight on the control nodes.
+    type: boolean
+  OpenDaylightUsername:
+    default: 'admin'
+    description: The username for the opendaylight server.
+    type: string
+  OpenDaylightPassword:
+    default: 'admin'
+    type: string
+    description: The password for the opendaylight server.
+    hidden: true
+  OpenDaylightEnableL3:
+    description: Knob to enable/disable ODL L3
+    type: string
+    default: 'no'
+  OpenDaylightEnableHA:
+    description: Knob to enable/disable ODL HA
+    type: boolean
+    default: false
+  OpenDaylightFeatures:
+    description: List of features to install with ODL
+    type: comma_delimited_list
+    default: "odl-ovsdb-openstack"
+  OpenDaylightApiVirtualIP:
+    type: string
+    default: ''
+  ONOSPort:
+    default: 8181
+    description: Set onos service port
+    type: number
   PcsdPassword:
     type: string
     description: The password for the 'pcsd' user.
@@ -964,6 +1004,7 @@ resources:
         neutron_enable_tunneling: {get_param: NeutronEnableTunnelling}
         neutron_enable_l2pop: {get_param: NeutronEnableL2Pop}
         neutron_enable_isolated_metadata: {get_param: NeutronEnableIsolatedMetadata}
+        neutron_enable_force_metadata: {get_param: NeutronEnableForceMetadata}
         haproxy_log_address: {get_param: HAProxySyslogAddress}
         haproxy_stats_password: {get_param: HAProxyStatsPassword}
         haproxy_stats_user: {get_param: HAProxyStatsUser}
@@ -1085,6 +1126,14 @@ resources:
             template: NETWORKS
             params:
               NETWORKS: {get_param: NeutronFlatNetworks}
+        opendaylight_port: {get_param: OpenDaylightPort}
+        opendaylight_install: {get_param: OpenDaylightInstall}
+        opendaylight_username: {get_param: OpenDaylightUsername}
+        opendaylight_password: {get_param: OpenDaylightPassword}
+        opendaylight_enable_l3: {get_param: OpenDaylightEnableL3}
+        opendaylight_enable_ha: {get_param: OpenDaylightEnableHA}
+        opendaylight_features: {get_param: OpenDaylightFeatures}
+        onos_port: {get_param: ONOSPort}
         neutron_metadata_proxy_shared_secret: {get_param: NeutronMetadataProxySharedSecret}
         neutron_agent_mode: {get_param: NeutronAgentMode}
         neutron_router_distributed: {get_param: NeutronDVR}
@@ -1270,8 +1319,10 @@ resources:
         mongo_db_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, MongoDbNetwork]}]}
         neutron_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NeutronApiNetwork]}]}
         neutron_local_ip: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NeutronTenantNetwork]}]}
+        neutron_tenant_network: {get_attr: [NetIpSubnetMap, net_ip_subnet_map, {get_param: [ServiceNetMap, NeutronTenantNetwork]}]}
         ceilometer_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, CeilometerApiNetwork]}]}
         aodh_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, AodhApiNetwork]}]}
+        opendaylight_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, OpenDaylightApiNetwork]}]}
         nova_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NovaApiNetwork]}]}
         nova_metadata_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NovaMetadataNetwork]}]}
         horizon_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, HorizonNetwork]}]}
@@ -1494,6 +1545,17 @@ resources:
                 mysql_bind_host: {get_input: mysql_network}
                 mysql_virtual_ip: {get_input: mysql_virtual_ip}
 
+                # OpenDaylight
+                opendaylight_port: {get_input: opendaylight_port}
+                opendaylight_install: {get_input: opendaylight_install}
+                opendaylight_username: {get_input: opendaylight_username}
+                opendaylight_password: {get_input: opendaylight_password}
+                opendaylight_enable_l3: {get_input: opendaylight_enable_l3}
+                opendaylight_enable_ha: {get_input: opendaylight_enable_ha}
+                opendaylight_features: {get_input: opendaylight_features}
+                # ONOS
+                onos_port: {get_input: onos_port}
+
                 # Neutron
                 neutron::bind_host: {get_input: neutron_api_network}
                 neutron::rabbit_password: {get_input: rabbit_password}
@@ -1515,7 +1577,9 @@ resources:
                 neutron::agents::metadata::shared_secret: {get_input: neutron_metadata_proxy_shared_secret}
                 neutron::agents::metadata::metadata_ip: {get_input: neutron_api_network}
                 neutron::agents::metadata::metadata_workers: {get_input: neutron_workers}
+                neutron::agents::dhcp::enable_force_metadata: {get_input: neutron_enable_force_metadata}
                 neutron_agent_mode: {get_input: neutron_agent_mode}
+                neutron_tenant_network: {get_input: neutron_tenant_network}
                 neutron_router_distributed: {get_input: neutron_router_distributed}
                 neutron::core_plugin: {get_input: neutron_core_plugin}
                 neutron::service_plugins: {get_input: neutron_service_plugins}
@@ -1690,6 +1754,7 @@ resources:
                 tripleo::loadbalancer::redis_password: {get_input: redis_password}
                 tripleo::packages::enable_install: {get_input: enable_package_install}
                 tripleo::packages::enable_upgrade: {get_input: enable_package_upgrade}
+                tripleo::loadbalancer::opendaylight: {get_input: opendaylight_enable_ha}
 
   # Hook for site-specific additional pre-deployment config, e.g extra hieradata
   ControllerExtraConfigPre:

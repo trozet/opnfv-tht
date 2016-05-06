@@ -251,6 +251,31 @@ parameters:
     default: ''
     description: Comma-separated list of ntp servers
     type: comma_delimited_list
+  OpenDaylightPort:
+    default: 8081
+    description: Set opendaylight service port
+    type: number
+  OpenDaylightUsername:
+    default: 'admin'
+    description: The username for the opendaylight server.
+    type: string
+  OpenDaylightPassword:
+    default: 'admin'
+    type: string
+    description: The password for the opendaylight server.
+    hidden: true
+  OpenDaylightEnableHA:
+    description: Knob to enable/disable ODL HA
+    type: boolean
+    default: false
+  OpenDaylightFeatures:
+    description: List of features to install with ODL
+    type: comma_delimited_list
+    default: "odl-ovsdb-openstack"
+  ONOSPort:
+    default: 8181
+    description: Set onos service port
+    type: number
   RabbitHost:
     type: string
     default: ''  # Has to be here because of the ignored empty value bug
@@ -446,6 +471,15 @@ resources:
       ManagementIp: {get_attr: [ManagementPort, ip_address]}
       ManagementIpUri: {get_attr: [ManagementPort, ip_address_uri]}
 
+  NetIpSubnetMap:
+    type: OS::TripleO::Network::Ports::NetIpSubnetMap
+    properties:
+      ControlPlaneIp: {get_attr: [NovaCompute, networks, ctlplane, 0]}
+      ExternalIpSubnet: {get_attr: [ExternalPort, ip_subnet]}
+      InternalApiIpSubnet: {get_attr: [InternalApiPort, ip_subnet]}
+      StorageIpSubnet: {get_attr: [StoragePort, ip_subnet]}
+      TenantIpSubnet: {get_attr: [TenantPort, ip_subnet]}
+
   NetworkConfig:
     type: OS::TripleO::Compute::Net::SoftwareConfig
     properties:
@@ -544,6 +578,12 @@ resources:
                 neutron::rabbit_use_ssl: {get_input: rabbit_client_use_ssl}
                 neutron::rabbit_port: {get_input: rabbit_client_port}
                 neutron::plugins::ml2::flat_networks: {get_input: neutron_flat_networks}
+                opendaylight_port: {get_input: opendaylight_port}
+                opendaylight_username: {get_input: opendaylight_username}
+                opendaylight_password: {get_input: opendaylight_password}
+                opendaylight_enable_ha: {get_input: opendaylight_enable_ha}
+                opendaylight_features: {get_param: OpenDaylightFeatures}
+                onos_port: {get_input: onos_port}
                 neutron_host: {get_input: neutron_host}
                 neutron::agents::ml2::ovs::local_ip: {get_input: neutron_local_ip}
 
@@ -551,6 +591,7 @@ resources:
                 neutron::plugins::ml2::tenant_network_types: {get_input: neutron_tenant_network_types}
                 neutron::agents::ml2::ovs::tunnel_types: {get_input: neutron_tunnel_types}
                 neutron::agents::ml2::ovs::extensions: {get_input: neutron_agent_extensions}
+                neutron_tenant_network: {get_input: neutron_tenant_network}
                 neutron::plugins::ml2::network_vlan_ranges: {get_input: neutron_network_vlan_ranges}
                 neutron::plugins::ml2::tunnel_id_ranges: {get_input: neutron_tunnel_id_ranges}
                 neutron::plugins::ml2::vni_ranges: {get_input: neutron_vni_ranges}
@@ -623,8 +664,15 @@ resources:
             template: NETWORKS
             params:
               NETWORKS: {get_param: NeutronFlatNetworks}
+        opendaylight_port: {get_param: OpenDaylightPort}
+        opendaylight_username: {get_param: OpenDaylightUsername}
+        opendaylight_password: {get_param: OpenDaylightPassword}
+        opendaylight_enable_ha: {get_param: OpenDaylightEnableHA}
+        opendaylight_features: {get_input: opendaylight_features}
+        onos_port: {get_param: ONOSPort}
         neutron_host: {get_param: NeutronHost}
         neutron_local_ip: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, NeutronTenantNetwork]}]}
+        neutron_tenant_network: {get_attr: [NetIpSubnetMap, net_ip_subnet_map, {get_param: [ServiceNetMap, NeutronTenantNetwork]}]}
         neutron_tunnel_id_ranges:
           str_replace:
             template: RANGES
