@@ -387,7 +387,7 @@ if hiera('step') >= 3 {
       }
     }
 
-    if ! 'onos_router' in hiera('neutron::service_plugins') and ! str2bool(hiera('opendaylight_enable_l3', 'no')) {
+    if ! ('onos_router' in hiera('neutron::service_plugins')) and ! str2bool(hiera('opendaylight_enable_l3', 'no')) {
       include ::neutron::agents::l3
     }
     include ::neutron::agents::dhcp
