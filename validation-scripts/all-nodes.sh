@@ -19,7 +19,7 @@ function ping_controller_ips() {
       if [[ $in_network == "True" ]]; then
         echo -n "Trying to ping $REMOTE_IP for local network $LOCAL_NETWORK..."
         set +e
-        if ! $ping -W 300 -c 1 $REMOTE_IP &> /dev/null; then
+        if ! $ping -w 300 -c 1 $REMOTE_IP &> /dev/null; then
           echo "FAILURE"
           echo "$REMOTE_IP is not pingable. Local Network: $LOCAL_NETWORK" >&2
           exit 1
