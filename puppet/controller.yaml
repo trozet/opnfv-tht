@@ -150,6 +150,10 @@ parameters:
     default: true
     description: Whether to enable Swift Storage on the Controller
     type: boolean
+  EnableSahara:
+    default: true
+    description: Whether to enable Sahara on the Controller
+    type: boolean
   ExtraConfig:
     default: {}
     description: |
@@ -1291,6 +1295,7 @@ resources:
         swift_mount_check: {get_param: SwiftMountCheck}
         enable_package_install: {get_param: EnablePackageInstall}
         enable_package_upgrade: {get_attr: [UpdateDeployment, update_managed_packages]}
+        enable_sahara: {get_param: EnableSahara}
         sahara_password: {get_param: SaharaPassword}
         sahara_dsn:
           list_join:
@@ -1720,6 +1725,7 @@ resources:
                 sahara::rabbit_use_ssl: {get_input: rabbit_client_use_ssl}
                 sahara::rabbit_port: {get_input: rabbit_client_port}
                 sahara::db::mysql::password: {get_input: sahara_password}
+                enable_sahara: {get_input: enable_sahara}
 
                 # Rabbit
                 rabbitmq::node_ip_address: {get_input: rabbitmq_network}

@@ -565,9 +565,10 @@ MYSQL_HOST=localhost\n",
         require => Exec['galera-ready'],
       }
     }
-
-    class { '::sahara::db::mysql':
-      require       => Exec['galera-ready'],
+    if hiera('enable_sahara') {
+      class { '::sahara::db::mysql':
+        require       => Exec['galera-ready'],
+      }
     }
   }
 
@@ -1142,19 +1143,20 @@ private_network_range: ${private_subnet}/${private_mask}"
   class { '::cinder::backends' :
     enabled_backends => union($cinder_enabled_backends, hiera('cinder_user_enabled_backends')),
   }
+  if hiera('enable_sahara') {
+    class { '::sahara':
+      sync_db => $sync_db,
+    }
 
-  class { '::sahara':
-    sync_db => $sync_db,
+    class { '::sahara::service::api':
+      manage_service => false,
+      enabled        => false,
+    }
+    class { '::sahara::service::engine':
+      manage_service => false,
+      enabled        => false,
+    }
   }
-  class { '::sahara::service::api':
-    manage_service => false,
-    enabled        => false,
-  }
-  class { '::sahara::service::engine':
-    manage_service => false,
-    enabled        => false,
-  }
-
   # swift proxy
   class { '::swift::proxy' :
     manage_service => $non_pcmk_start,
@@ -1451,23 +1453,25 @@ if hiera('step') >= 4 {
     }
 
     # Sahara
-    pacemaker::resource::service { $::sahara::params::api_service_name :
-      clone_params => 'interleave=true',
-      require      => Pacemaker::Resource::Ocf['openstack-core'],
-    }
-    pacemaker::resource::service { $::sahara::params::engine_service_name :
-      clone_params => 'interleave=true',
-    }
-    pacemaker::constraint::base { 'keystone-then-sahara-api-constraint':
-      constraint_type => 'order',
-      first_resource  => 'openstack-core-clone',
-      second_resource => "${::sahara::params::api_service_name}-clone",
-      first_action    => 'start',
-      second_action   => 'start',
-      require         => [Pacemaker::Resource::Service[$::sahara::params::api_service_name],
-                          Pacemaker::Resource::Ocf['openstack-core']],
-    }
+    if hiera('enable_sahara') {
+      pacemaker::resource::service { $::sahara::params::api_service_name :
+        clone_params => 'interleave=true',
+        require      => Pacemaker::Resource::Ocf['openstack-core'],
+      }
 
+      pacemaker::resource::service { $::sahara::params::engine_service_name :
+        clone_params => 'interleave=true',
+      }
+      pacemaker::constraint::base { 'keystone-then-sahara-api-constraint':
+        constraint_type => 'order',
+        first_resource  => 'openstack-core-clone',
+        second_resource => "${::sahara::params::api_service_name}-clone",
+        first_action    => 'start',
+        second_action   => 'start',
+        require         => [Pacemaker::Resource::Service[$::sahara::params::api_service_name],
+          Pacemaker::Resource::Ocf['openstack-core']],
+      }
+    }
     # Glance
     pacemaker::resource::service { $::glance::params::registry_service_name :
       clone_params => 'interleave=true',

@@ -822,6 +822,12 @@ parameters:
     description: Optional scheduler hints to pass to nova
     default: {}
 
+# Sahara
+  EnableSahara:
+    default: true
+    description: Whether to enable Sahara on the Controller
+    type: boolean
+
 # OpenDaylight specific parameters
   OpenDaylightCount:
     type: number
@@ -1003,6 +1009,7 @@ resources:
           ControllerEnableCephStorage: {get_param: ControllerEnableCephStorage}
           ComputeEnableCephStorage: {get_param: ComputeEnableCephStorage}
           EnableSwiftStorage: {get_param: ControllerEnableSwiftStorage}
+          EnableSahara: {get_param: EnableSahara}
           ExtraConfig: {get_param: ExtraConfig}
           FencingConfig: {get_param: FencingConfig}
           Flavor: {get_param: OvercloudControlFlavor}
