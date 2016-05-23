@@ -2,6 +2,7 @@ parameters:
     #NeutronEnableL3Agent: false
     NeutronEnableForceMetadata: true
     OpenDaylightEnableL3: "'yes'"
+    OpenDaylightFeatures: "odl-ovsdb-openstack,odl-dlux-all"
     NeutronServicePlugins: "networking_odl.l3.l3_odl.OpenDaylightL3RouterPlugin"
     NeutronEnableL3Agent: false
     ExtraConfig:

@@ -17,6 +17,7 @@ parameters:
     # OpenDaylightCount: 1
     NeutronL3HA: false
     OpenDaylightEnableHA: true
+    OpenDaylightFeatures: "odl-ovsdb-openstack,odl-dlux-all"
     ExtraConfig:
       neutron_mechanism_drivers: ['opendaylight']
       neutron_tenant_network_type: vxlan
