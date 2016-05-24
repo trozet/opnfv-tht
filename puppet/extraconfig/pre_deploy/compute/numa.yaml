@@ -1,0 +1,36 @@
+heat_template_version: 2015-04-30
+
+description: Compute node hieradata for NUMA configuration
+
+parameters:
+  server:
+    description: ID of the compute node to apply this config to
+    type: string
+  LibvirtCPUPinSet:
+    description: A list or range of physical CPU cores to reserve for virtual machine processes
+    type: string
+
+resources:
+  ComputeNumaConfig:
+    type: OS::Heat::StructuredConfig
+    properties:
+      group: os-apply-config
+      config:
+        hiera:
+          datafiles:
+            numa:
+              mapped_data:
+                nova::compute::vcpu_pin_set: {get_input: vcpu_pin_set}
+
+  ComputeNumaDeployment:
+    type: OS::Heat::StructuredDeployment
+    properties:
+      config: {get_resource: ComputeNumaConfig}
+      server: {get_param: server}
+      input_values:
+        vcpu_pin_set: {get_param: LibvirtCPUPinSet}
+
+outputs:
+  deploy_stdout:
+    description: Output of the extra hiera data deployment
+    value: {get_attr: [ComputeNumaDeployment, deploy_stdout]}

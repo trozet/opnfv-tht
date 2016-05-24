@@ -1,0 +1,9 @@
+# A Heat environment file which can be used to enable
+# Numa on compute nodes
+resource_registry:
+  OS::TripleO::ComputeExtraConfigPre: ../puppet/extraconfig/pre_deploy/compute/numa.yaml
+
+parameter_defaults:
+  #LibvirtCPUPinSet: '1'
+  NovaImage: 'overcloud-full'
+  BlockStorageImage: 'overcloud-full'
