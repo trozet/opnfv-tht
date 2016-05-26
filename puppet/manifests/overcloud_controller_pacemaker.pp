@@ -448,9 +448,10 @@ if hiera('step') >= 2 {
 
     if downcase(hiera('ceilometer_backend')) == 'mongodb' {
       pacemaker::resource::service { $::mongodb::params::service_name :
-        op_params    => 'start timeout=370s stop timeout=200s',
-        clone_params => true,
-        require      => Class['::mongodb::server'],
+        op_params          => 'start timeout=370s stop timeout=200s',
+        clone_params       => true,
+        post_success_sleep => 15,
+        require            => Class['::mongodb::server'],
       }
       # NOTE (spredzy) : The replset can only be run
       # once all the nodes have joined the cluster.
@@ -465,13 +466,16 @@ if hiera('step') >= 2 {
     }
 
     pacemaker::resource::ocf { 'galera' :
-      ocf_agent_name  => 'heartbeat:galera',
-      op_params       => 'promote timeout=300s on-fail=block',
-      master_params   => '',
-      meta_params     => "master-max=${galera_nodes_count} ordered=true",
-      resource_params => "additional_parameters='--open-files-limit=16384' enable_creation=true wsrep_cluster_address='gcomm://${galera_nodes}'",
-      require         => Class['::mysql::server'],
-      before          => Exec['galera-ready'],
+      ocf_agent_name     => 'heartbeat:galera',
+      op_params          => 'promote timeout=300s on-fail=block',
+      master_params      => '',
+      meta_params        => "master-max=${galera_nodes_count} ordered=true",
+      resource_params    => "additional_parameters='--open-files-limit=16384' enable_creation=true wsrep_cluster_address='gcomm://${galera_nodes}'",
+      post_success_sleep => 15,
+      tries              => 10,
+      try_sleep          => 30,
+      require            => Class['::mysql::server'],
+      before             => Exec['galera-ready'],
     }
 
     pacemaker::resource::ocf { 'redis':
