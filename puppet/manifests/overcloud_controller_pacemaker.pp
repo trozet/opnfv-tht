@@ -67,6 +67,45 @@ if hiera('step') >= 1 {
     include ::ntp
   }
 
+  # Ceph
+  $enable_ceph = hiera('ceph_storage_count', 0) > 0 or hiera('enable_ceph_storage', false) or hiera('compute_enable_ceph_storage', false)
+
+  if $enable_ceph {
+    $mon_initial_members = downcase(hiera('ceph_mon_initial_members'))
+    if str2bool(hiera('ceph_ipv6', false)) {
+      $mon_host = hiera('ceph_mon_host_v6')
+    } else {
+      $mon_host = hiera('ceph_mon_host')
+    }
+    class { '::ceph::profile::params':
+      mon_initial_members => $mon_initial_members,
+      mon_host            => $mon_host,
+    }
+    include ::ceph::conf
+    include ::ceph::profile::mon
+  }
+
+  if str2bool(hiera('enable_ceph_storage', false)) {
+    if str2bool(hiera('ceph_osd_selinux_permissive', true)) {
+      exec { 'set selinux to permissive on boot':
+        command => "sed -ie 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config",
+        onlyif  => "test -f /etc/selinux/config && ! grep '^SELINUX=permissive' /etc/selinux/config",
+        path    => ['/usr/bin', '/usr/sbin'],
+      }
+
+      exec { 'set selinux to permissive':
+        command => 'setenforce 0',
+        onlyif  => "which setenforce && getenforce | grep -i 'enforcing'",
+        path    => ['/usr/bin', '/usr/sbin'],
+      } -> Class['ceph::profile::osd']
+    }
+
+    include ::ceph::conf
+    include ::ceph::profile::osd
+  }
+
+
+
   $controller_node_ips = split(hiera('controller_node_ips'), ',')
   $controller_node_names = split(downcase(hiera('controller_node_names')), ',')
   if $enable_load_balancer {
@@ -78,6 +117,12 @@ if hiera('step') >= 1 {
       haproxy_service_manage => false,
     }
   }
+
+  Class['::ceph::conf'] ->
+  Class['::ceph::profile::mon'] -> Class['::ceph::profile::osd'] -> Class['::tripleo::loadbalancer']
+  Class['::ceph::profile::osd'] -> Class['::mysql::server']
+  Class['::ceph::profile::osd'] -> Class['::mongodb::server']
+
 
   $pacemaker_cluster_members = downcase(regsubst(hiera('controller_node_names'), ',', ' ', 'G'))
   $corosync_ipv6 = str2bool(hiera('corosync_ipv6', false))
@@ -540,33 +585,39 @@ MYSQL_HOST=localhost\n",
     require        => File['/etc/sysconfig/clustercheck'],
   }
 
+  exec { 'sql-sleep':
+    command => "sleep 180 && echo 'SQL Sleep complete'",
+    require => Exec['galera-ready'],
+    path => "/usr/bin:/bin",
+  }
+
   # Create all the database schemas
   if $sync_db {
     class { '::keystone::db::mysql':
-      require => Exec['galera-ready'],
+      require => Exec['sql-sleep'],
     }
     class { '::glance::db::mysql':
-      require => Exec['galera-ready'],
+      require => Exec['sql-sleep'],
     }
     class { '::nova::db::mysql':
-      require => Exec['galera-ready'],
+      require => Exec['sql-sleep'],
     }
     class { '::nova::db::mysql_api':
-      require => Exec['galera-ready'],
+      require => Exec['sql-sleep'],
     }
     class { '::neutron::db::mysql':
-      require => Exec['galera-ready'],
+      require => Exec['sql-sleep'],
     }
     class { '::cinder::db::mysql':
-      require => Exec['galera-ready'],
+      require => Exec['sql-sleep'],
     }
     class { '::heat::db::mysql':
-      require => Exec['galera-ready'],
+      require => Exec['sql-sleep'],
     }
 
     if downcase(hiera('ceilometer_backend')) == 'mysql' {
       class { '::ceilometer::db::mysql':
-        require => Exec['galera-ready'],
+        require => Exec['sql-sleep'],
       }
     }
     if hiera('enable_sahara') {
@@ -579,42 +630,7 @@ MYSQL_HOST=localhost\n",
   # pre-install swift here so we can build rings
   include ::swift
 
-  # Ceph
-  $enable_ceph = hiera('ceph_storage_count', 0) > 0 or hiera('enable_ceph_storage', false) or hiera('compute_enable_ceph_storage', false)
 
-  if $enable_ceph {
-    $mon_initial_members = downcase(hiera('ceph_mon_initial_members'))
-    if str2bool(hiera('ceph_ipv6', false)) {
-      $mon_host = hiera('ceph_mon_host_v6')
-    } else {
-      $mon_host = hiera('ceph_mon_host')
-    }
-    class { '::ceph::profile::params':
-      mon_initial_members => $mon_initial_members,
-      mon_host            => $mon_host,
-    }
-    include ::ceph::conf
-    include ::ceph::profile::mon
-  }
-
-  if str2bool(hiera('enable_ceph_storage', false)) {
-    if str2bool(hiera('ceph_osd_selinux_permissive', true)) {
-      exec { 'set selinux to permissive on boot':
-        command => "sed -ie 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config",
-        onlyif  => "test -f /etc/selinux/config && ! grep '^SELINUX=permissive' /etc/selinux/config",
-        path    => ['/usr/bin', '/usr/sbin'],
-      }
-
-      exec { 'set selinux to permissive':
-        command => 'setenforce 0',
-        onlyif  => "which setenforce && getenforce | grep -i 'enforcing'",
-        path    => ['/usr/bin', '/usr/sbin'],
-      } -> Class['ceph::profile::osd']
-    }
-
-    include ::ceph::conf
-    include ::ceph::profile::osd
-  }
 
   if str2bool(hiera('enable_external_ceph', false)) {
     if str2bool(hiera('ceph_ipv6', false)) {
