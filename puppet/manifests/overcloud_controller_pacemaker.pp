@@ -257,6 +257,26 @@ if hiera('step') >= 1 {
     remove_default_accounts => $pacemaker_master,
     service_manage          => false,
     service_enabled         => false,
+  }->
+  exec { 'mysql-server-sleep':
+    command => 'sleep 30',
+    path    => "/usr/bin:/bin",
+  }
+    
+  if $pacemaker_master {
+    if $enable_load_balancer {
+      pacemaker::resource::ocf { 'galera' :
+        ocf_agent_name     => 'heartbeat:galera',
+        op_params          => 'promote timeout=300s on-fail=block',
+        master_params      => '',
+        meta_params        => "master-max=${galera_nodes_count} ordered=true",
+        resource_params    => "additional_parameters='--open-files-limit=16384' enable_creation=true wsrep_cluster_address='gcomm://${galera_nodes}'",
+        post_success_sleep => 15,
+        tries              => 10,
+        try_sleep          => 30,
+        require            => Exec['mysql-server-sleep'],
+      }
+    }
   }
 
 }
@@ -510,18 +530,6 @@ if hiera('step') >= 2 {
       }
     }
 
-    pacemaker::resource::ocf { 'galera' :
-      ocf_agent_name     => 'heartbeat:galera',
-      op_params          => 'promote timeout=300s on-fail=block',
-      master_params      => '',
-      meta_params        => "master-max=${galera_nodes_count} ordered=true",
-      resource_params    => "additional_parameters='--open-files-limit=16384' enable_creation=true wsrep_cluster_address='gcomm://${galera_nodes}'",
-      post_success_sleep => 15,
-      tries              => 10,
-      try_sleep          => 30,
-      require            => Class['::mysql::server'],
-      before             => Exec['galera-ready'],
-    }
 
     pacemaker::resource::ocf { 'redis':
       ocf_agent_name  => 'heartbeat:redis',
@@ -586,7 +594,7 @@ MYSQL_HOST=localhost\n",
   }
 
   exec { 'sql-sleep':
-    command => "sleep 180 && echo 'SQL Sleep complete'",
+    command => "sleep 240 && echo 'SQL Sleep complete'",
     require => Exec['galera-ready'],
     path => "/usr/bin:/bin",
   }
@@ -595,34 +603,52 @@ MYSQL_HOST=localhost\n",
   if $sync_db {
     class { '::keystone::db::mysql':
       require => Exec['sql-sleep'],
-    }
+    }->
+    exec { 'keystone-sync-db-sleep':
+      command => "sleep 5",
+      path => "/usr/bin:/bin",
+    }->
     class { '::glance::db::mysql':
-      require => Exec['sql-sleep'],
-    }
+    }->
+    exec { 'glance-sync-db-sleep':
+      command => "sleep 5",
+      path => "/usr/bin:/bin",
+    }->
     class { '::nova::db::mysql':
-      require => Exec['sql-sleep'],
-    }
+    }->
+    exec { 'nova-sync-db-sleep':
+      command => "sleep 5",
+      path => "/usr/bin:/bin",
+    }->
     class { '::nova::db::mysql_api':
-      require => Exec['sql-sleep'],
-    }
+    }->
+    exec { 'nova-mysql-api-sync-db-sleep':
+      command => "sleep 5",
+      path => "/usr/bin:/bin",
+    }->
     class { '::neutron::db::mysql':
-      require => Exec['sql-sleep'],
-    }
+    }->
+    exec { 'neutron-sync-db-sleep':
+      command => "sleep 5",
+      path => "/usr/bin:/bin",
+    }->
     class { '::cinder::db::mysql':
-      require => Exec['sql-sleep'],
-    }
+    }->
+    exec { 'cinder-sync-db-sleep':
+      command => "sleep 5",
+      path => "/usr/bin:/bin",
+    }->
     class { '::heat::db::mysql':
-      require => Exec['sql-sleep'],
     }
 
     if downcase(hiera('ceilometer_backend')) == 'mysql' {
       class { '::ceilometer::db::mysql':
-        require => Exec['sql-sleep'],
+        require => Class['::heat::db::mysql'],
       }
     }
     if hiera('enable_sahara') {
       class { '::sahara::db::mysql':
-        require       => Exec['galera-ready'],
+        require => Class['::heat::db::mysql'],
       }
     }
   }
