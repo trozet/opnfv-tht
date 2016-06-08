@@ -7,3 +7,5 @@ parameter_defaults:
   #LibvirtCPUPinSet: '1'
   NovaImage: 'overcloud-full'
   BlockStorageImage: 'overcloud-full'
+  OvercloudComputeFlavor: baremetal
+
