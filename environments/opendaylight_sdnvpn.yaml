@@ -19,11 +19,14 @@ parameters:
     OpenDaylightFeatures: "odl-vpnservice-openstack"
     NeutronL3HA: false
     NeutronServicePlugins: "router,qos,networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin"
+    NeutronNetworkType: 'vxlan'
+    NeutronMechanismDrivers: 'opendaylight'
     ExtraConfig:
       tripleo::ringbuilder::build_ring: False
-      neutron_mechanism_drivers: ['opendaylight']
-      neutron_tenant_network_type: vxlan
       # Enable this if you want OpenDaylight on the contollers
       # reduce OpenDaylightCount to 0 if you don't want any
       # OpenDaylight only nodes
       opendaylight_install: true
+
+parameter_defaults:
+    NeutronEnableOVSAgent: false

@@ -194,7 +194,6 @@ else {
 
     if str2bool(hiera('opendaylight_install', 'false')) {
       $controller_ips = split(hiera('controller_node_ips'), ',')
-      $opendaylight_controller_ip = $controller_ips[0]
       if hiera('opendaylight_enable_ha', false) {
         $odl_ovsdb_iface = "tcp:${controller_ips[0]}:6640 tcp:${controller_ips[1]}:6640 tcp:${controller_ips[2]}:6640"
         # Workaround to work with current puppet-neutron

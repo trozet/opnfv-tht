@@ -16,12 +16,15 @@ parameters:
     # increase this if you need more ODL nodes
     # OpenDaylightCount: 1
     NeutronL3HA: false
-    OpenDaylightEnableHA: true
+    OpenDaylightEnableHA: false
     OpenDaylightFeatures: "odl-ovsdb-openstack,odl-dlux-all"
+    NeutronMechanismDrivers: 'opendaylight'
+    NeutronNetworkType: 'vxlan'
     ExtraConfig:
-      neutron_mechanism_drivers: ['opendaylight']
-      neutron_tenant_network_type: vxlan
       # Enable this if you want OpenDaylight on the contollers
       # reduce OpenDaylightCount to 0 if you don't want any
       # OpenDaylight only nodes
       opendaylight_install: true
+
+parameter_defaults:
+    NeutronEnableOVSAgent: false

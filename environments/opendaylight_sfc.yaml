@@ -18,11 +18,14 @@ parameters:
     ControllerEnableSwiftStorage: false
     OpenDaylightFeatures: "odl-ovsdb-sfc-rest"
     NeutronL3HA: false
+    NeutronMechanismDrivers: 'opendaylight'
+    NeutronNetworkType: 'vxlan'
     ExtraConfig:
       tripleo::ringbuilder::build_ring: False
-      neutron_mechanism_drivers: ['opendaylight']
-      neutron_tenant_network_type: vxlan
       # Enable this if you want OpenDaylight on the contollers
       # reduce OpenDaylightCount to 0 if you don't want any
       # OpenDaylight only nodes
       opendaylight_install: true
+
+parameter_defaults:
+    NeutronEnableOVSAgent: false

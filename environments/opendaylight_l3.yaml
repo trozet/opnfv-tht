@@ -4,10 +4,11 @@ parameters:
     OpenDaylightEnableL3: "'yes'"
     OpenDaylightFeatures: "odl-ovsdb-openstack,odl-dlux-all"
     NeutronServicePlugins: "networking_odl.l3.l3_odl.OpenDaylightL3RouterPlugin"
+    NeutronMechanismDrivers: 'opendaylight'
+    NeutronNetworkType: 'vxlan'
     ExtraConfig:
-      neutron_mechanism_drivers: ['opendaylight']
-      neutron_tenant_network_type: vxlan
       opendaylight_install: true
 
 parameter_defaults:
     NeutronEnableL3Agent: false
+    NeutronEnableOVSAgent: false
