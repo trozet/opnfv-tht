@@ -21,6 +21,7 @@ parameters:
     NeutronServicePlugins: "router,qos,networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin"
     NeutronNetworkType: 'vxlan'
     NeutronMechanismDrivers: 'opendaylight'
+    NeutronEnableForceMetadata: true
     ExtraConfig:
       tripleo::ringbuilder::build_ring: False
       # Enable this if you want OpenDaylight on the contollers

@@ -15,6 +15,7 @@
 parameters:
     # increase this if you need more ODL nodes
     # OpenDaylightCount: 1
+    NeutronEnableForceMetadata: true
     NeutronL3HA: false
     OpenDaylightEnableHA: false
     OpenDaylightFeatures: "odl-ovsdb-openstack,odl-dlux-all"

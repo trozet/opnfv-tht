@@ -20,6 +20,7 @@ parameters:
     NeutronL3HA: false
     NeutronMechanismDrivers: 'opendaylight'
     NeutronNetworkType: 'vxlan'
+    NeutronEnableForceMetadata: true
     ExtraConfig:
       tripleo::ringbuilder::build_ring: False
       # Enable this if you want OpenDaylight on the contollers

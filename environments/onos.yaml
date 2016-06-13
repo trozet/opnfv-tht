@@ -1,6 +1,7 @@
 parameters:
     #This a bug for odl deployment. Once bug fixed OpenDaylightCount can be remove.
     OpenDaylightCount: 0
+    NeutronEnableForceMetadata: true
     NeutronL3HA: false
     NeutronServicePlugins: "onos_router"
 #   NeutronEnableL3Agent: false
