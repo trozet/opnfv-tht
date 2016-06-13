@@ -943,30 +943,32 @@ if hiera('step') >= 3 {
         # Bug where netvirt:1 doesn't come up right with HA
         # Check ovsdb:1 instead
         $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/ovsdb:1'
+        $odl_vip = hiera('opendaylight_api_vip')
+        if ! $odl_vip {
+          fail('ODL VIP not set in hiera or empty')
+        }
+        $odl_ml2_ip = $odl_vip
       } else {
         $opendaylight_controller_ip = $controller_ips[0]
         $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
         $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/netvirt:1'
+        $odl_ml2_ip = $opendaylight_controller_ip
       }
     } else {
       $opendaylight_controller_ip = hiera('opendaylight_controller_ip')
       $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
       $net_virt_url = 'restconf/operational/network-topology:network-topology/topology/netvirt:1'
+      $odl_ml2_ip = $opendaylight_controller_ip
     }
 
     $opendaylight_port = hiera('opendaylight_port')
     $private_ip = hiera('neutron::agents::ml2::ovs::local_ip')
     $opendaylight_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/${net_virt_url}"
-    $odl_vip = hiera('opendaylight_api_vip')
-
-    if ! $odl_vip {
-      fail('ODL VIP not set in hiera or empty')
-    }
 
     class { '::neutron::plugins::ml2::opendaylight':
       odl_username  => hiera('opendaylight_username'),
       odl_password  => hiera('opendaylight_password'),
-      odl_url => "http://${odl_vip}:${opendaylight_port}/controller/nb/v2/neutron";
+      odl_url => "http://${odl_ml2_ip}:${opendaylight_port}/controller/nb/v2/neutron";
     }
     # TODO (trozet) fix SDNVPN for ODL HA
     if hiera('opendaylight_features', 'odl-ovsdb-openstack') =~ /odl-vpnservice-openstack/ {
