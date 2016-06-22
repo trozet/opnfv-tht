@@ -527,6 +527,10 @@ parameters:
     default: ''
     description: A custom default route for the NeutronPublicInterface.
     type: string
+  NeutronOVSDataPathType:
+    default: 'system'
+    description: Data Path for OVS
+    type: string
   NeutronPublicInterfaceIP:
     default: ''
     description: A custom IP address to put onto the NeutronPublicInterface.
@@ -1175,6 +1179,7 @@ resources:
             params:
               MAPPINGS: {get_param: NeutronBridgeMappings}
         neutron_external_network_bridge: {get_param: NeutronExternalNetworkBridge}
+        ovs_datapath_type: {get_param: NeutronOVSDataPathType}
         neutron_public_interface: {get_param: NeutronPublicInterface}
         neutron_public_interface_raw_device: {get_param: NeutronPublicInterfaceRawDevice}
         neutron_public_interface_default_route: {get_param: NeutronPublicInterfaceDefaultRoute}
@@ -1579,6 +1584,7 @@ resources:
                 neutron::agents::ml2::ovs::l2_population: {get_input: neutron_enable_l2pop}
                 neutron::agents::dhcp::enable_isolated_metadata: {get_input: neutron_enable_isolated_metadata}
                 neutron::agents::ml2::ovs::local_ip: {get_input: neutron_local_ip}
+                neutron::agents::ml2::ovs::datapath_type: {get_input: ovs_datapath_type}
                 neutron::plugins::ml2::flat_networks: {get_input: neutron_flat_networks}
                 neutron::agents::metadata::shared_secret: {get_input: neutron_metadata_proxy_shared_secret}
                 neutron::agents::metadata::metadata_ip: {get_input: neutron_api_network}

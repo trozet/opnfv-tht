@@ -9,6 +9,10 @@ parameters:
   LibvirtCPUPinSet:
     description: A list or range of physical CPU cores to reserve for virtual machine processes
     type: string
+  DpdkPmdDriver:
+    description: Driver to use to bind dpdk NIC
+    type: string
+    default: "uio_pci_generic"
 
 resources:
   ComputeNumaConfig:
@@ -21,7 +25,7 @@ resources:
             numa:
               mapped_data:
                 nova::compute::vcpu_pin_set: {get_input: vcpu_pin_set}
-
+                dpdk_pmd_type: {get_input: dpdk_pmd_type}
   ComputeNumaDeployment:
     type: OS::Heat::StructuredDeployment
     properties:
@@ -29,6 +33,21 @@ resources:
       server: {get_param: server}
       input_values:
         vcpu_pin_set: {get_param: LibvirtCPUPinSet}
+        dpdk_pmd_type: {get_param: DpdkPmdDriver}
+
+  ComputeNumaPuppetConfig:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: puppet
+      config:
+        get_file: manifests/ovs_dpdk.pp
+
+  ComputeNumaPuppetDeployment:
+    depends_on: ComputeNumaDeployment
+    type: OS::Heat::StructuredDeployment
+    properties:
+      server: {get_param: server}
+      config: {get_resource: ComputeNumaPuppetConfig}
 
 outputs:
   deploy_stdout:
