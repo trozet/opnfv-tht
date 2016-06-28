@@ -49,6 +49,13 @@ $dpdk_pci_addr = inline_template("<%= `ethtool -i ${dpdk_port} | grep bus-info |
 if ! $dpdk_pci_addr { fail("Cannot find PCI address of ${dpdk_port}")}
 
 $dpdk_bind_type = hiera("dpdk_pmd_type")
+exec { 'remove regular interface':
+  command => "ovs-vsctl del-port br-phy ${dpdk_port}",
+  onlyif  => "ovs-vsctl list-ports br-phy | grep ${dpdk_port}",
+  path    => '/usr/sbin:/usr/bin:/sbin:/bin',
+  require => Service['openvswitch'],
+}
+->
 exec {'bind_dpdk_port':
   command  => "dpdk_nic_bind --force --bind=${dpdk_bind_type} ${dpdk_pci_addr}",
   path     => "/usr/sbin/",
