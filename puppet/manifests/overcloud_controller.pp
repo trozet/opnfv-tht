@@ -491,6 +491,36 @@ private_network_range: ${private_subnet}/${private_mask}"
             require => File['/etc/astute.yaml'],
             path => '/usr/local/bin:/usr/bin:/sbin:/bin:/usr/local/sbin:/usr/sbin',
           }
+        } elsif hiera('fdio', false) {
+          $odl_username  = hiera('opendaylight_username')
+          $odl_password  = hiera('opendaylight_password')
+          $ctrlplane_interface = hiera('nic1')
+          if ! $ctrlplane_interface { fail("Cannot map logical interface NIC1 to physical interface")}
+          $vpp_ip = inline_template("<%= scope.lookupvar('::ipaddress_${ctrlplane_interface}') -%>")
+          $fdio_data_template='{"node" : [
+{"node-id":"<%= @hostname %>",
+"netconf-node-topology:host":"<%= @vpp_ip %>",
+"netconf-node-topology:port":"2830",
+"netconf-node-topology:tcp-only":false,
+"netconf-node-topology:keepalive-delay":0,
+"netconf-node-topology:username":"<%= @odl_username %>",
+"netconf-node-topology:password":"<%= @odl_password %>",
+"netconf-node-topology:connection-timeout-millis":10000,
+"netconf-node-topology:default-request-timeout-millis":10000,
+"netconf-node-topology:max-connection-attempts":10,
+"netconf-node-topology:between-attempts-timeout-millis":10000,
+"netconf-node-topology:schema-cache-directory":"hcmount"}
+]
+}
+'
+          $fdio_data = inline_template($fdio_data_template)
+          $fdio_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/restconf/config/network-topology:network-topology/network-topology:topology/topology-netconf"
+          exec { 'VPP Mount into ODL':
+            command   => "curl -o /dev/null --fail --silent -u ${odl_username}:${odl_password} ${fdio_url} -i -H 'Content-Type: application/json' --data \'${fdio_data}\' -X PUT",
+            tries     => 5,
+            try_sleep => 30,
+            path      => '/usr/sbin:/usr/bin:/sbin:/bin',
+          }
         } else {
           class { '::neutron::plugins::ovs::opendaylight':
             tunnel_ip             => $private_ip,
