@@ -21,6 +21,7 @@ parameters:
     OpenDaylightFeatures: "odl-ovsdb-openstack,odl-dlux-all"
     NeutronMechanismDrivers: 'opendaylight'
     NeutronNetworkType: 'vxlan'
+    NeutronServicePlugins: 'router'
     ExtraConfig:
       # Enable this if you want OpenDaylight on the contollers
       # reduce OpenDaylightCount to 0 if you don't want any
