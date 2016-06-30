@@ -53,7 +53,6 @@ exec { 'remove regular interface':
   command => "ovs-vsctl del-port br-phy ${dpdk_port}",
   onlyif  => "ovs-vsctl list-ports br-phy | grep ${dpdk_port}",
   path    => '/usr/sbin:/usr/bin:/sbin:/bin',
-  require => Service['openvswitch'],
 }
 ->
 exec {'bind_dpdk_port':
@@ -70,7 +69,8 @@ exec {'set ovs bridge datapath':
   command => 'ovs-vsctl set bridge br-phy datapath_type=netdev',
   unless  => 'ovs-vsctl list bridge br-phy | grep datapath_type | grep netdev',
   path    => '/usr/sbin:/usr/bin:/sbin:/bin',
-  require => [ Exec['bind_dpdk_port'], Service['openvswitch'] ]
+  require => Exec['bind_dpdk_port'],
+  notify  => Service['openvswitch'],
 }
 ->
 exec { 'add dpdk port to ovs':
@@ -90,4 +90,3 @@ exec { 'br-tun patch port':
   unless  => 'ovs-vsctl list-ports br-tun | grep patch-br-tun',
   path    => '/usr/sbin:/usr/bin:/sbin:/bin',
 }
-

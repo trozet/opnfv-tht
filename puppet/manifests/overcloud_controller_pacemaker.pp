@@ -1406,6 +1406,21 @@ private_network_range: ${private_subnet}/${private_mask}"
 
   hiera_include('controller_classes')
 
+  exec {'bring up br-ex':
+    command => 'ifup br-ex',
+    path    => '/usr/sbin:/usr/bin:/sbin:/bin',
+  }
+  if $pacemaker_master {
+    if $enable_load_balancer {
+      exec { 'assign VIP to br-ex':
+        command => "ip a a ${public_vip} dev br-ex",
+        path    => '/usr/sbin:/usr/bin:/sbin:/bin',
+        unless  => "ip addr show br-ex | grep ${public_vip}",
+        require => Exec['bring up br-ex']
+      }
+    }
+  }
+
 } #END STEP 3
 
 if hiera('step') >= 4 {

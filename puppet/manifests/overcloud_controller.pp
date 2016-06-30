@@ -843,6 +843,19 @@ private_network_range: ${private_subnet}/${private_mask}"
 
   hiera_include('controller_classes')
 
+  $public_vip = hiera('tripleo::loadbalancer::public_virtual_ip')
+  exec {'bring up br-ex':
+    command => 'ifup br-ex',
+    path    => '/usr/sbin:/usr/bin:/sbin:/bin',
+  }
+  ->
+  exec {'assign VIP to br-ex':
+    command => "ip a a ${public_vip} dev br-ex",
+    path    => '/usr/sbin:/usr/bin:/sbin:/bin',
+    unless  => "ip addr show br-ex | grep ${public_vip}"
+  }
+
+
 } #END STEP 3
 
 if hiera('step') >= 4 {
