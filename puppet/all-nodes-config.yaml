@@ -16,6 +16,8 @@ parameters:
     type: comma_delimited_list
   ceph_storage_hosts:
     type: comma_delimited_list
+  congress_api_node_ips:
+    type: comma_delimited_list
   controller_names:
     type: comma_delimited_list
   rabbit_node_ips:
@@ -197,6 +199,14 @@ resources:
                         list_join:
                         - "','"
                         - {get_param: ceilometer_api_node_ips}
+                congress_api_node_ips:
+                  str_replace:
+                    template: "['SERVERS_LIST']"
+                    params:
+                      SERVERS_LIST:
+                        list_join:
+                        - "','"
+                        - {get_param: congress_api_node_ips}
                 aodh_api_node_ips:
                   str_replace:
                     template: "['SERVERS_LIST']"
@@ -300,6 +310,7 @@ resources:
                 ceilometer::rabbit_hosts: *rabbit_nodes_array
                 aodh::rabbit_hosts: *rabbit_nodes_array
                 cinder::rabbit_hosts: *rabbit_nodes_array
+                congress::rabbit_hosts: *rabbit_nodes_array
                 glance::notify::rabbitmq::rabbit_hosts: *rabbit_nodes_array
                 heat::rabbit_hosts: *rabbit_nodes_array
                 neutron::rabbit_hosts: *rabbit_nodes_array

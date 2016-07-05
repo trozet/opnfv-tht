@@ -11,6 +11,7 @@ parameters:
   AodhApiVirtualIP: {type: string, default: ''}
   CeilometerApiVirtualIP: {type: string, default: ''}
   CinderApiVirtualIP: {type: string, default: ''}
+  CongressApiVirtualIP: {type: string, default: ''}
   GlanceApiVirtualIP: {type: string, default: ''}
   HeatApiVirtualIP: {type: string, default: ''}
   KeystoneAdminApiVirtualIP: {type: string, default: ''}
@@ -33,6 +34,9 @@ parameters:
       CinderAdmin: {protocol: http, port: '8776', host: IP_ADDRESS}
       CinderInternal: {protocol: http, port: '8776', host: IP_ADDRESS}
       CinderPublic: {protocol: http, port: '8776', host: IP_ADDRESS}
+      CongressAdmin: {protocol: http, port: '1789', host: IP_ADDRESS}
+      CongressInternal: {protocol: http, port: '1789', host: IP_ADDRESS}
+      CongressPublic: {protocol: http, port: '1789', host: IP_ADDRESS}
       GlanceAdmin: {protocol: http, port: '9292', host: IP_ADDRESS}
       GlanceInternal: {protocol: http, port: '9292', host: IP_ADDRESS}
       GlancePublic: {protocol: http, port: '9292', host: IP_ADDRESS}
@@ -533,6 +537,123 @@ outputs:
                   IP_ADDRESS: {get_param: PublicVirtualIP}
             - ':'
             - get_param: [EndpointMap, CinderPublic, port]
+      CongressAdmin:
+        host:
+          str_replace:
+            template:
+              get_param: [EndpointMap, CongressAdmin, host]
+            params:
+              CLOUDNAME: {get_param: CloudName}
+              IP_ADDRESS: {get_param: CongressApiVirtualIP}
+        port:
+          get_param: [EndpointMap, CongressAdmin, port]
+        protocol:
+          get_param: [EndpointMap, CongressAdmin, protocol]
+        uri:
+          list_join:
+          - ''
+          - - get_param: [EndpointMap, CongressAdmin, protocol]
+            - ://
+            - str_replace:
+                template:
+                  get_param: [EndpointMap, CongressAdmin, host]
+                params:
+                  CLOUDNAME: {get_param: CloudName}
+                  IP_ADDRESS: {get_param: CongressApiVirtualIP}
+            - ':'
+            - get_param: [EndpointMap, CongressAdmin, port]
+            - /v1/%(tenant_id)s
+        uri_no_suffix:
+          list_join:
+          - ''
+          - - get_param: [EndpointMap, CongressAdmin, protocol]
+            - ://
+            - str_replace:
+                template:
+                  get_param: [EndpointMap, CongressAdmin, host]
+                params:
+                  CLOUDNAME: {get_param: CloudName}
+                  IP_ADDRESS: {get_param: CongressApiVirtualIP}
+            - ':'
+            - get_param: [EndpointMap, CongressAdmin, port]
+      CongressInternal:
+        host:
+          str_replace:
+            template:
+              get_param: [EndpointMap, CongressInternal, host]
+            params:
+              CLOUDNAME: {get_param: CloudName}
+              IP_ADDRESS: {get_param: CongressApiVirtualIP}
+        port:
+          get_param: [EndpointMap, CongressInternal, port]
+        protocol:
+          get_param: [EndpointMap, CongressInternal, protocol]
+        uri:
+          list_join:
+          - ''
+          - - get_param: [EndpointMap, CongressInternal, protocol]
+            - ://
+            - str_replace:
+                template:
+                  get_param: [EndpointMap, CongressInternal, host]
+                params:
+                  CLOUDNAME: {get_param: CloudName}
+                  IP_ADDRESS: {get_param: CongressApiVirtualIP}
+            - ':'
+            - get_param: [EndpointMap, CongressInternal, port]
+            - /v1/%(tenant_id)s
+        uri_no_suffix:
+          list_join:
+          - ''
+          - - get_param: [EndpointMap, CongressInternal, protocol]
+            - ://
+            - str_replace:
+                template:
+                  get_param: [EndpointMap, CongressInternal, host]
+                params:
+                  CLOUDNAME: {get_param: CloudName}
+                  IP_ADDRESS: {get_param: CongressApiVirtualIP}
+            - ':'
+            - get_param: [EndpointMap, CongressInternal, port]
+      CongressPublic:
+        host:
+          str_replace:
+            template:
+              get_param: [EndpointMap, CongressPublic, host]
+            params:
+              CLOUDNAME: {get_param: CloudName}
+              IP_ADDRESS: {get_param: PublicVirtualIP}
+        port:
+          get_param: [EndpointMap, CongressPublic, port]
+        protocol:
+          get_param: [EndpointMap, CongressPublic, protocol]
+        uri:
+          list_join:
+          - ''
+          - - get_param: [EndpointMap, CongressPublic, protocol]
+            - ://
+            - str_replace:
+                template:
+                  get_param: [EndpointMap, CongressPublic, host]
+                params:
+                  CLOUDNAME: {get_param: CloudName}
+                  IP_ADDRESS: {get_param: PublicVirtualIP}
+            - ':'
+            - get_param: [EndpointMap, CongressPublic, port]
+            - /v1/%(tenant_id)s
+        uri_no_suffix:
+          list_join:
+          - ''
+          - - get_param: [EndpointMap, CongressPublic, protocol]
+            - ://
+            - str_replace:
+                template:
+                  get_param: [EndpointMap, CongressPublic, host]
+                params:
+                  CLOUDNAME: {get_param: CloudName}
+                  IP_ADDRESS: {get_param: PublicVirtualIP}
+            - ':'
+            - get_param: [EndpointMap, CongressPublic, port]
       GlanceAdmin:
         host:
           str_replace:

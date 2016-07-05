@@ -387,6 +387,10 @@ parameters:
     default: lioadm
     description: The iSCSI helper to use with cinder.
     type: string
+  CongressPassword:
+    description: The password for the congress service account.
+    type: string
+    hidden: true
   ControllerCount:
     type: number
     default: 1
@@ -720,6 +724,7 @@ parameters:
       MongoDbNetwork: internal_api
       CinderApiNetwork: internal_api
       CinderIscsiNetwork: storage
+      CongressApiNetwork: internal_api
       GlanceApiNetwork: storage
       GlanceRegistryNetwork: internal_api
       KeystoneAdminApiNetwork: ctlplane # allows undercloud to config endpoints
@@ -822,6 +827,11 @@ parameters:
     description: Optional scheduler hints to pass to nova
     default: {}
 
+# Congress
+  EnableCongress:
+    default: true
+    description: Whether to enable Congress on the Controller
+    type: boolean
 # Sahara
   EnableSahara:
     default: true
@@ -940,6 +950,7 @@ resources:
       CeilometerApiVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, CeilometerApiNetwork]}]}
       AodhApiVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, AodhApiNetwork]}]}
       CinderApiVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, CinderApiNetwork]}]}
+      CongressApiVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, CongressApiNetwork]}]}
       GlanceApiVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, GlanceApiNetwork]}]}
       HeatApiVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, HeatApiNetwork]}]}
       KeystoneAdminApiVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, KeystoneAdminApiNetwork]}]}
@@ -998,6 +1009,7 @@ resources:
           CinderEnableIscsiBackend: {get_param: CinderEnableIscsiBackend}
           CinderEnableRbdBackend: {get_param: CinderEnableRbdBackend}
           CloudDomain: {get_param: CloudDomain}
+          CongressPassword: {get_param: CongressPassword}
           ControlVirtualInterface: {get_param: ControlVirtualInterface}
           ControllerExtraConfig: {get_param: controllerExtraConfig}
           CorosyncIPv6: {get_param: CorosyncIPv6}
@@ -1009,6 +1021,7 @@ resources:
           ControllerEnableCephStorage: {get_param: ControllerEnableCephStorage}
           ComputeEnableCephStorage: {get_param: ComputeEnableCephStorage}
           EnableSwiftStorage: {get_param: ControllerEnableSwiftStorage}
+          EnableCongress: {get_param: EnableCongress}
           EnableSahara: {get_param: EnableSahara}
           ExtraConfig: {get_param: ExtraConfig}
           FencingConfig: {get_param: FencingConfig}
@@ -1113,6 +1126,7 @@ resources:
           CeilometerApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, CeilometerApiNetwork]}]}
           AodhApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, AodhApiNetwork]}]}
           CinderApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, CinderApiNetwork]}]}
+          CongressApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, CongressApiNetwork]}]}
           HeatApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, HeatApiNetwork]}]}
           HeatApiVirtualIPUri: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, HeatApiNetwork]}]}
           GlanceApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, GlanceApiNetwork]}]}
@@ -1358,6 +1372,7 @@ resources:
       heat_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, HeatApiNetwork]}]}
       swift_proxy_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, SwiftProxyNetwork]}]}
       ceilometer_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, CeilometerApiNetwork]}]}
+      congress_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, CongressApiNetwork]}]}
       aodh_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, AodhApiNetwork]}]}
       nova_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, NovaApiNetwork]}]}
       nova_metadata_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, NovaMetadataNetwork]}]}
@@ -1474,6 +1489,7 @@ resources:
         keystone_public_api_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, KeystonePublicApiNetwork]}]}
         neutron_api_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, NeutronApiNetwork]}]}
         cinder_api_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, CinderApiNetwork]}]}
+        congress_api_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, CongressApiNetwork]}]}
         glance_api_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, GlanceApiNetwork]}]}
         glance_registry_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, GlanceRegistryNetwork]}]}
         swift_proxy_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, SwiftProxyNetwork]}]}
@@ -1774,6 +1790,9 @@ outputs:
   CinderInternalVip:
     description: VIP for Cinder API internal endpoint
     value: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, CinderApiNetwork]}]}
+  CongressInternalVip:
+    description: VIP for Congress API internal endpoint
+    value: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, CongessApiNetwork]}]}
   GlanceInternalVip:
     description: VIP for Glance API internal endpoint
     value: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, GlanceApiNetwork]}]}

@@ -23,6 +23,7 @@ Service <|
   tag == 'aodh-service' or
   tag == 'cinder-service' or
   tag == 'ceilometer-service' or
+  tag == 'congress-service' or
   tag == 'glance-service' or
   tag == 'heat-service' or
   tag == 'keystone-service' or
@@ -638,7 +639,10 @@ MYSQL_HOST=localhost\n",
       command => "sleep 5",
       path => "/usr/bin:/bin",
     }->
-    class { '::heat::db::mysql':
+    class { '::heat::db::mysql': } ->
+    exec { 'heat-sync-db-sleep':
+      command => "sleep 5",
+      path => "/usr/bin:/bin",
     }
 
     if downcase(hiera('ceilometer_backend')) == 'mysql' {
@@ -649,6 +653,15 @@ MYSQL_HOST=localhost\n",
     if hiera('enable_sahara') {
       class { '::sahara::db::mysql':
         require => Class['::heat::db::mysql'],
+      }
+    }
+    if hiera('enable_congress') {
+      class { '::congress::db::mysql':
+        require => Exec['heat-sync-db-sleep']
+      }->
+      exec { 'congress-sync-db-sleep':
+        command => "sleep 5",
+        path => "/usr/bin:/bin",
       }
     }
   }
@@ -1545,6 +1558,25 @@ if hiera('step') >= 4 {
                   Pacemaker::Resource::Service[$::cinder::params::volume_service]],
     }
 
+    # Congress
+    if hiera('enable_congress') {
+      class { '::congress':
+        sync_db => $sync_db,
+      }
+      pacemaker::resource::service { $::congress::params::service_name :
+        clone_params => 'interleave=true',
+        require      => Pacemaker::Resource::Ocf['openstack-core'],
+      }
+      pacemaker::constraint::base { 'keystone-then-congress-api-constraint':
+        constraint_type => 'order',
+        first_resource  => 'openstack-core-clone',
+        second_resource => "${::congress::params::service_name}-clone",
+        first_action    => 'start',
+        second_action   => 'start',
+        require         => [Pacemaker::Resource::Service[$::congress::params::service_name],
+          Pacemaker::Resource::Ocf['openstack-core']],
+      }
+    }
     # Sahara
     if hiera('enable_sahara') {
       pacemaker::resource::service { $::sahara::params::api_service_name :

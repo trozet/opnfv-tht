@@ -100,6 +100,14 @@ parameters:
     default: 0
     description: Number of workers for Cinder service.
     type: number
+  CongressApiVirtualIP:
+    type: string
+    default: ''
+  CongressPassword:
+    default: unset
+    description: The password for the congress service account, used by congress-server.
+    type: string
+    hidden: true
   ControllerExtraConfig:
     default: {}
     description: |
@@ -134,6 +142,10 @@ parameters:
     default: ''
     description: Set to True to enable debugging on all services.
     type: string
+  EnableCongress:
+    default: true
+    description: Whether to enable Congress on the Controller
+    type: boolean
   EnableFencing:
     default: false
     description: Whether to enable fencing in Pacemaker or not.
@@ -1251,6 +1263,16 @@ resources:
               - '@'
               - {get_param: MysqlVirtualIPUri}
               - '/ceilometer'
+        enable_congress: {get_param: EnableCongress}
+        congress_password: {get_param: CongressPassword}
+        congress_dsn:
+          list_join:
+            - ''
+            - - 'mysql://congress:'
+              - {get_param: CongressPassword}
+              - '@'
+              - {get_param: MysqlVirtualIPUri}
+              - '/congress'
         snmpd_readonly_user_name: {get_param: SnmpdReadonlyUserName}
         snmpd_readonly_user_password: {get_param: SnmpdReadonlyUserPassword}
         nova_enable_db_purge: {get_param: NovaEnableDBPurge}
@@ -1318,6 +1340,7 @@ resources:
             params:
               IP: {get_attr: [NetIpMap, net_ip_uri_map, {get_param: [ServiceNetMap, CinderIscsiNetwork]}]}
         cinder_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, CinderApiNetwork]}]}
+        congress_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, CongressApiNetwork]}]}
         glance_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, GlanceApiNetwork]}]}
         glance_registry_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, GlanceRegistryNetwork]}]}
         glance_api_servers: { get_param: [EndpointMap, GlanceInternal, uri]}
@@ -1653,6 +1676,22 @@ resources:
                 ceilometer::db::mysql::password: {get_input: ceilometer_password}
                 snmpd_readonly_user_name: {get_input: snmpd_readonly_user_name}
                 snmpd_readonly_user_password: {get_input: snmpd_readonly_user_password}
+
+                # Congress
+                congress::bind_host: {get_input: congress_api_network}
+                congress::keystone_password: {get_input: congress_password}
+                congress::auth_uri: {get_input: keystone_auth_uri}
+                congress::admin_user: congress
+                congress::identity_uri: {get_input: keystone_identity_uri}
+                congress::database_connection: {get_input: congress_dsn}
+                congress::debug: {get_input: debug}
+                congress::rpc_backend: rabbit
+                congress::rabbit_userid: {get_input: rabbit_username}
+                congress::rabbit_password: {get_input: rabbit_password}
+                congress::rabbit_use_ssl: {get_input: rabbit_client_use_ssl}
+                congress::rabbit_port: {get_input: rabbit_client_port}
+                congress::db::mysql::password: {get_input: congress_password}
+                enable_congress: {get_input: enable_congress}
 
                 # Aodh
                 aodh::rabbit_userid: {get_input: rabbit_username}

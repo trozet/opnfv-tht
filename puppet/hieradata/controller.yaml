@@ -34,6 +34,7 @@ redis::sentinel::notification_script: '/usr/local/bin/redis-notifications.sh'
 keystone::roles::admin::email: 'root@localhost'
 
 # service tenant
+congress::admin_tenant_name: 'service'
 glance::api::keystone_tenant: 'service'
 aodh::api::keystone_tenant: 'service'
 glance::registry::keystone_tenant: 'service'
@@ -139,6 +140,7 @@ tripleo::loadbalancer::keystone_admin: true
 tripleo::loadbalancer::keystone_public: true
 tripleo::loadbalancer::neutron: true
 tripleo::loadbalancer::cinder: true
+tripleo::loadbalancer::congress: true
 tripleo::loadbalancer::glance_api: true
 tripleo::loadbalancer::glance_registry: true
 tripleo::loadbalancer::nova_ec2: true

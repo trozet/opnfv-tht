@@ -135,6 +135,9 @@ if hiera('step') >= 2 {
   include ::neutron::db::mysql
   include ::cinder::db::mysql
   include ::heat::db::mysql
+  if hiera('enable_congress') {
+    include ::congress::db::mysql
+  }
   if hiera('enable_sahara') {
     include ::sahara::db::mysql
   }
@@ -805,6 +808,10 @@ private_network_range: ${private_subnet}/${private_mask}"
   include ::heat::api_cloudwatch
   include ::heat::engine
 
+  # Congress
+  if hiera('enable_congress') {
+    include ::congress
+  }
   # Sahara
   if hiera('enable_sahara') {
     include ::sahara
