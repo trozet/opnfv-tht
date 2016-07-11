@@ -109,13 +109,16 @@ if hiera('step') >= 1 {
 
   $controller_node_ips = split(hiera('controller_node_ips'), ',')
   $controller_node_names = split(downcase(hiera('controller_node_names')), ',')
+  $ctlplane_interface = hiera('nic1')
+
   if $enable_load_balancer {
     class { '::tripleo::loadbalancer' :
-      controller_hosts       => $controller_node_ips,
-      controller_hosts_names => $controller_node_names,
-      manage_vip             => false,
-      mysql_clustercheck     => true,
-      haproxy_service_manage => false,
+      controller_hosts          => $controller_node_ips,
+      controller_hosts_names    => $controller_node_names,
+      control_virtual_interface => $ctlplane_interface,
+      manage_vip                => false,
+      mysql_clustercheck        => true,
+      haproxy_service_manage    => false,
     }
   }
 

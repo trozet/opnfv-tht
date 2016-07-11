@@ -25,11 +25,13 @@ if hiera('step') >= 1 {
   Exec <| tag == 'kmod::load' |>  -> Sysctl <| |>
 
   $controller_node_ips = split(hiera('controller_node_ips'), ',')
+  $ctlplane_interface = hiera('nic1')
 
   if $enable_load_balancer {
     class { '::tripleo::loadbalancer' :
-      controller_hosts => $controller_node_ips,
-      manage_vip       => true,
+      controller_hosts          => $controller_node_ips,
+      control_virtual_interface => $ctlplane_interface,
+      manage_vip                => true,
     }
   }
 
