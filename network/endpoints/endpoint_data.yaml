@@ -37,6 +37,15 @@ Cinder:
             V2: /v2/%(tenant_id)s
     port: 8776
 
+Congress:
+    Internal:
+        vip_param: CongressApi
+    Public:
+        vip_param: Public
+    Admin:
+        vip_param: CongressApi
+    port: 1789
+
 Glance:
     Internal:
         vip_param: GlanceApi
