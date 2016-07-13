@@ -90,7 +90,7 @@ neutron::agents::dhcp::dnsmasq_config_file: /etc/neutron/dnsmasq-neutron.conf
 
 # nova
 nova::notify_on_state_change: 'vm_and_task_state'
-nova::api::default_floating_pool: 'public'
+nova::api::default_floating_pool: 'external'
 nova::api::osapi_v3: true
 nova::api::sync_db_api: true
 nova::scheduler::filter::ram_allocation_ratio: '1.0'
