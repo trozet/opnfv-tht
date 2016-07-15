@@ -1679,7 +1679,7 @@ resources:
 
                 # Congress
                 congress::bind_host: {get_input: congress_api_network}
-                congress::datasource_list: 'congress.datasources.neutronv2_driver.NeutronV2Driver,congress.datasources.glancev2_driver.GlanceV2Driver,congress.datasources.nova_driver.NovaDriver,congress.datasources.  keystone_driver.KeystoneDriver,congress.datasources.ceilometer_driver.CeilometerDriver,congress.datasources.cinder_driver.CinderDriver,congress.datasources.doctor_driver.DoctorDriver'
+                congress::datasource_list: 'congress.datasources.neutronv2_driver.NeutronV2Driver,congress.datasources.glancev2_driver.GlanceV2Driver,congress.datasources.nova_driver.NovaDriver,congress.datasources.keystone_driver.KeystoneDriver,congress.datasources.ceilometer_driver.CeilometerDriver,congress.datasources.cinder_driver.CinderDriver,congress.datasources.doctor_driver.DoctorDriver'
                 congress::keystone_password: {get_input: congress_password}
                 congress::auth_uri: {get_input: keystone_auth_uri}
                 congress::admin_user: congress
