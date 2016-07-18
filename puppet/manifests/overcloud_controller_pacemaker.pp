@@ -189,11 +189,47 @@ if hiera('step') >= 1 {
     replace => true,
   }
 
+  # NOTE(gfidente): the following vars are needed on all nodes so they
+  # need to stay out of pacemaker_master conditional.
+  # The addresses mangling will hopefully go away when we'll be able to
+  # configure the connection string via hostnames, until then, we need to pass
+  # the list of IPv6 addresses *with* port and without the brackets as 'members'
+  # argument for the 'mongodb_replset' resource.
+  if str2bool(hiera('mongodb::server::ipv6', false)) {
+    $mongo_node_ips_with_port_prefixed = prefix(hiera('mongo_node_ips'), '[')
+    $mongo_node_ips_with_port = suffix($mongo_node_ips_with_port_prefixed, ']:27017')
+    $mongo_node_ips_with_port_nobr = suffix(hiera('mongo_node_ips'), ':27017')
+  } else {
+    $mongo_node_ips_with_port = suffix(hiera('mongo_node_ips'), ':27017')
+    $mongo_node_ips_with_port_nobr = suffix(hiera('mongo_node_ips'), ':27017')
+  }
+  $mongodb_replset = hiera('mongodb::server::replset')
+
   if downcase(hiera('ceilometer_backend')) == 'mongodb' {
     include ::mongodb::globals
     include ::mongodb::client
     class { '::mongodb::server' :
       service_manage => false,
+    }
+
+    if $pacemaker_master {
+      pacemaker::resource::service { $::mongodb::params::service_name :
+        op_params          => 'start timeout=370s stop timeout=200s',
+        clone_params       => true,
+        post_success_sleep => 30,
+        require            => Class['::mongodb::server'],
+        before             => Class['::mysql::server'],
+      }
+      # NOTE (spredzy) : The replset can only be run
+      # once all the nodes have joined the cluster.
+      mongodb_conn_validator { $mongo_node_ips_with_port :
+        timeout => '600',
+        require => Pacemaker::Resource::Service[$::mongodb::params::service_name],
+        before  => Mongodb_replset[$mongodb_replset],
+      }
+      mongodb_replset { $mongodb_replset :
+        members => $mongo_node_ips_with_port_nobr,
+      }
     }
   }
 
@@ -286,22 +322,6 @@ if hiera('step') >= 1 {
 }
 
 if hiera('step') >= 2 {
-
-  # NOTE(gfidente): the following vars are needed on all nodes so they
-  # need to stay out of pacemaker_master conditional.
-  # The addresses mangling will hopefully go away when we'll be able to
-  # configure the connection string via hostnames, until then, we need to pass
-  # the list of IPv6 addresses *with* port and without the brackets as 'members'
-  # argument for the 'mongodb_replset' resource.
-  if str2bool(hiera('mongodb::server::ipv6', false)) {
-    $mongo_node_ips_with_port_prefixed = prefix(hiera('mongo_node_ips'), '[')
-    $mongo_node_ips_with_port = suffix($mongo_node_ips_with_port_prefixed, ']:27017')
-    $mongo_node_ips_with_port_nobr = suffix(hiera('mongo_node_ips'), ':27017')
-  } else {
-    $mongo_node_ips_with_port = suffix(hiera('mongo_node_ips'), ':27017')
-    $mongo_node_ips_with_port_nobr = suffix(hiera('mongo_node_ips'), ':27017')
-  }
-  $mongodb_replset = hiera('mongodb::server::replset')
 
   if $pacemaker_master {
 
@@ -513,25 +533,6 @@ if hiera('step') >= 2 {
       clone_params    => 'ordered=true interleave=true',
       meta_params     => 'notify=true',
       require         => Class['::rabbitmq'],
-    }
-
-    if downcase(hiera('ceilometer_backend')) == 'mongodb' {
-      pacemaker::resource::service { $::mongodb::params::service_name :
-        op_params          => 'start timeout=370s stop timeout=200s',
-        clone_params       => true,
-        post_success_sleep => 15,
-        require            => Class['::mongodb::server'],
-      }
-      # NOTE (spredzy) : The replset can only be run
-      # once all the nodes have joined the cluster.
-      mongodb_conn_validator { $mongo_node_ips_with_port :
-        timeout => '600',
-        require => Pacemaker::Resource::Service[$::mongodb::params::service_name],
-        before  => Mongodb_replset[$mongodb_replset],
-      }
-      mongodb_replset { $mongodb_replset :
-        members => $mongo_node_ips_with_port_nobr,
-      }
     }
 
 
