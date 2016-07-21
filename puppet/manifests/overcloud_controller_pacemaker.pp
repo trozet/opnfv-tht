@@ -990,7 +990,6 @@ if hiera('step') >= 3 {
     # TODO (trozet) fix SDNVPN for ODL HA
     if hiera('opendaylight_features', 'odl-ovsdb-openstack') =~ /odl-vpnservice-openstack/ {
       $odl_tunneling_ip = hiera('neutron::agents::ml2::ovs::local_ip')
-      $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
       $private_network = hiera('neutron_tenant_network')
       $cidr_arr = split($private_network, '/')
       $private_mask = $cidr_arr[1]

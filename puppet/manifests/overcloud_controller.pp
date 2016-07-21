@@ -475,7 +475,6 @@ if hiera('step') >= 3 {
           $cidr_arr = split($private_network, '/')
           $private_mask = $cidr_arr[1]
           $private_subnet = inline_template("<%= require 'ipaddr'; IPAddr.new('$private_network').mask('$private_mask') -%>")
-          $odl_ovsdb_iface = "tcp:${opendaylight_controller_ip}:6640"
           $odl_port = hiera('opendaylight_port')
           $file_setupTEPs = '/tmp/setup_TEPs.py'
           $astute_yaml = "network_metadata:
