@@ -810,6 +810,11 @@ if hiera('step') >= 3 {
   }
   include ::nova::network::neutron
 
+  nova_config {
+    'DEFAULT/my_ip':                     value => $ipaddress;
+    'DEFAULT/host':                      value => $fqdn;
+  }
+
   if hiera('neutron::core_plugin') == 'midonet.neutron.plugin_v1.MidonetPluginV2' {
 
     # TODO(devvesa) provide non-controller ips for these services
