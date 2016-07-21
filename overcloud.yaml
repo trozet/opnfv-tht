@@ -1792,7 +1792,7 @@ outputs:
     value: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, CinderApiNetwork]}]}
   CongressInternalVip:
     description: VIP for Congress API internal endpoint
-    value: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, CongessApiNetwork]}]}
+    value: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, CongressApiNetwork]}]}
   GlanceInternalVip:
     description: VIP for Glance API internal endpoint
     value: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, GlanceApiNetwork]}]}
