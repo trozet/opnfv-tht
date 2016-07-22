@@ -166,6 +166,10 @@ parameters:
     default: true
     description: Whether to enable Sahara on the Controller
     type: boolean
+  EnableTacker:
+    default: true
+    description: Whether to enable Tacker on the Controller
+    type: boolean
   ExtraConfig:
     default: {}
     description: |
@@ -378,6 +382,14 @@ parameters:
   SaharaPassword:
     default: unset
     description: The password for the sahara service account, used by sahara-api.
+    type: string
+    hidden: true
+  TackerApiVirtualIP:
+    type: string
+    default: ''
+  TackerPassword:
+    default: unset
+    description: The password for the tacker service account, used by tacker-api.
     type: string
     hidden: true
   MysqlClusterUniquePart:
@@ -1332,6 +1344,16 @@ resources:
               - '@'
               - {get_param: MysqlVirtualIPUri}
               - '/sahara'
+        enable_tacker: {get_param: EnableTacker}
+        tacker_password: {get_param: TackerPassword}
+        tacker_dsn:
+          list_join:
+            - ''
+            - - 'mysql://tacker:'
+              - {get_param: TackerPassword}
+              - '@'
+              - {get_param: MysqlVirtualIPUri}
+              - '/tacker'
         swift_proxy_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, SwiftProxyNetwork]}]}
         swift_management_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, SwiftMgmtNetwork]}]}
         cinder_iscsi_network:
@@ -1364,6 +1386,7 @@ resources:
         redis_password: {get_param: RedisPassword}
         redis_vip: {get_param: RedisVirtualIP}
         sahara_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, SaharaApiNetwork]}]}
+        tacker_api_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, TackerApiNetwork]}]}
         memcached_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, MemcachedNetwork]}]}
         mysql_network: {get_attr: [NetIpMap, net_ip_map, {get_param: [ServiceNetMap, MysqlNetwork]}]}
         mysql_virtual_ip: {get_param: MysqlVirtualIP}
@@ -1773,6 +1796,21 @@ resources:
                 sahara::rabbit_port: {get_input: rabbit_client_port}
                 sahara::db::mysql::password: {get_input: sahara_password}
                 enable_sahara: {get_input: enable_sahara}
+
+                # Tacker
+                tacker::bind_host: {get_input: tacker_api_network}
+                tacker::keystone_password: {get_input: tacker_password}
+                tacker::auth_uri: {get_input: keystone_auth_uri}
+                tacker::identity_uri: {get_input: keystone_identity_uri}
+                tacker::database_connection: {get_input: tacker_dsn}
+                tacker::debug: {get_input: debug}
+                tacker::rpc_backend: rabbit
+                tacker::rabbit_userid: {get_input: rabbit_username}
+                tacker::rabbit_password: {get_input: rabbit_password}
+                tacker::rabbit_use_ssl: {get_input: rabbit_client_use_ssl}
+                tacker::rabbit_port: {get_input: rabbit_client_port}
+                tacker::db::mysql::password: {get_input: tacker_password}
+                enable_tacker: {get_input: enable_tacker}
 
                 # Rabbit
                 rabbitmq::node_ip_address: {get_input: rabbitmq_network}

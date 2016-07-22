@@ -143,6 +143,9 @@ if hiera('step') >= 2 {
   if hiera('enable_sahara') {
     include ::sahara::db::mysql
   }
+  if hiera('enable_tacker') {
+    include ::tacker::db::mysql
+  }
   if downcase(hiera('ceilometer_backend')) == 'mysql' {
     include ::ceilometer::db::mysql
     include ::aodh::db::mysql
@@ -823,6 +826,11 @@ private_network_range: ${private_subnet}/${private_mask}"
     include ::sahara
     include ::sahara::service::api
     include ::sahara::service::engine
+  }
+  # Tacker
+  if hiera('enable_tacker') {
+    include ::tacker
+    include ::tacker::service
   }
   # Horizon
   if 'cisco_n1kv' in hiera('neutron::plugins::ml2::mechanism_drivers') {

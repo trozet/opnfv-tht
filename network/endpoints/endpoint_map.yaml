@@ -22,6 +22,7 @@ parameters:
   PublicVirtualIP: {type: string, default: ''}
   SaharaApiVirtualIP: {type: string, default: ''}
   SwiftProxyVirtualIP: {type: string, default: ''}
+  TackerApiVirtualIP: {type: string, default: ''}
   EndpointMap:
     type: json
     default:
@@ -68,6 +69,9 @@ parameters:
       SwiftAdmin: {protocol: http, port: '8080', host: IP_ADDRESS}
       SwiftInternal: {protocol: http, port: '8080', host: IP_ADDRESS}
       SwiftPublic: {protocol: http, port: '8080', host: IP_ADDRESS}
+      TackerAdmin: {protocol: http, port: '8888', host: IP_ADDRESS}
+      TackerInternal: {protocol: http, port: '8888', host: IP_ADDRESS}
+      TackerPublic: {protocol: http, port: '8888', host: IP_ADDRESS}
     description: Mapping of service endpoint -> protocol. Typically set
       via parameter_defaults in the resource registry.
   CloudName: {type: string, default: overcloud, description: The DNS name
@@ -2120,3 +2124,117 @@ outputs:
                   IP_ADDRESS: {get_param: PublicVirtualIP}
             - ':'
             - get_param: [EndpointMap, SwiftPublic, port]
+      TackerAdmin:
+        host:
+          str_replace:
+            template:
+              get_param: [EndpointMap, TackerAdmin, host]
+            params:
+              CLOUDNAME: {get_param: CloudName}
+              IP_ADDRESS: {get_param: TackerApiVirtualIP}
+        port:
+          get_param: [EndpointMap, TackerAdmin, port]
+        protocol:
+          get_param: [EndpointMap, TackerAdmin, protocol]
+        uri:
+          list_join:
+          - ''
+          - - get_param: [EndpointMap, TackerAdmin, protocol]
+            - ://
+            - str_replace:
+                template:
+                  get_param: [EndpointMap, TackerAdmin, host]
+                params:
+                  CLOUDNAME: {get_param: CloudName}
+                  IP_ADDRESS: {get_param: TackerApiVirtualIP}
+            - ':'
+            - get_param: [EndpointMap, TackerAdmin, port]
+        uri_no_suffix:
+          list_join:
+          - ''
+          - - get_param: [EndpointMap, TackerAdmin, protocol]
+            - ://
+            - str_replace:
+                template:
+                  get_param: [EndpointMap, TackerAdmin, host]
+                params:
+                  CLOUDNAME: {get_param: CloudName}
+                  IP_ADDRESS: {get_param: TackerApiVirtualIP}
+            - ':'
+            - get_param: [EndpointMap, TackerAdmin, port]
+      TackerInternal:
+        host:
+          str_replace:
+            template:
+              get_param: [EndpointMap, TackerInternal, host]
+            params:
+              CLOUDNAME: {get_param: CloudName}
+              IP_ADDRESS: {get_param: TackerApiVirtualIP}
+        port:
+          get_param: [EndpointMap, TackerInternal, port]
+        protocol:
+          get_param: [EndpointMap, TackerInternal, protocol]
+        uri:
+          list_join:
+          - ''
+          - - get_param: [EndpointMap, TackerInternal, protocol]
+            - ://
+            - str_replace:
+                template:
+                  get_param: [EndpointMap, TackerInternal, host]
+                params:
+                  CLOUDNAME: {get_param: CloudName}
+                  IP_ADDRESS: {get_param: TackerApiVirtualIP}
+            - ':'
+            - get_param: [EndpointMap, TackerInternal, port]
+        uri_no_suffix:
+          list_join:
+          - ''
+          - - get_param: [EndpointMap, TackerInternal, protocol]
+            - ://
+            - str_replace:
+                template:
+                  get_param: [EndpointMap, TackerInternal, host]
+                params:
+                  CLOUDNAME: {get_param: CloudName}
+                  IP_ADDRESS: {get_param: TackerApiVirtualIP}
+            - ':'
+            - get_param: [EndpointMap, TackerInternal, port]
+      TackerPublic:
+        host:
+          str_replace:
+            template:
+              get_param: [EndpointMap, TackerPublic, host]
+            params:
+              CLOUDNAME: {get_param: CloudName}
+              IP_ADDRESS: {get_param: PublicVirtualIP}
+        port:
+          get_param: [EndpointMap, TackerPublic, port]
+        protocol:
+          get_param: [EndpointMap, TackerPublic, protocol]
+        uri:
+          list_join:
+          - ''
+          - - get_param: [EndpointMap, TackerPublic, protocol]
+            - ://
+            - str_replace:
+                template:
+                  get_param: [EndpointMap, TackerPublic, host]
+                params:
+                  CLOUDNAME: {get_param: CloudName}
+                  IP_ADDRESS: {get_param: PublicVirtualIP}
+            - ':'
+            - get_param: [EndpointMap, TackerPublic, port]
+        uri_no_suffix:
+          list_join:
+          - ''
+          - - get_param: [EndpointMap, TackerPublic, protocol]
+            - ://
+            - str_replace:
+                template:
+                  get_param: [EndpointMap, TackerPublic, host]
+                params:
+                  CLOUDNAME: {get_param: CloudName}
+                  IP_ADDRESS: {get_param: PublicVirtualIP}
+            - ':'
+            - get_param: [EndpointMap, TackerPublic, port]

@@ -29,7 +29,8 @@ Service <|
   tag == 'keystone-service' or
   tag == 'neutron-service' or
   tag == 'nova-service' or
-  tag == 'sahara-service'
+  tag == 'sahara-service' or
+  tag == 'tacker-service'
 |> {
   hasrestart => true,
   restart    => '/bin/true',
@@ -668,6 +669,15 @@ MYSQL_HOST=localhost\n",
         path => "/usr/bin:/bin",
       }
     }
+    if hiera('enable_tacker') {
+      class { '::tacker::db::mysql':
+        require => Class['::heat::db::mysql'],
+      }->
+      exec { 'tacker-sync-db-sleep':
+        command => "sleep 5",
+        path => "/usr/bin:/bin",
+      }
+    }
   }
 
   # pre-install swift here so we can build rings
@@ -1302,6 +1312,17 @@ private_network_range: ${private_subnet}/${private_mask}"
     swift::storage::filter::healthcheck { $swift_components : }
   }
 
+  if hiera('enable_tacker') {
+    class { '::tacker':
+      sync_db => $sync_db,
+    }
+
+    class { '::tacker::service':
+      manage_service => false,
+      enabled        => false,
+    }
+  }
+
   # Ceilometer
   case downcase(hiera('ceilometer_backend')) {
     /mysql/: {
@@ -1605,6 +1626,25 @@ if hiera('step') >= 4 {
           Pacemaker::Resource::Ocf['openstack-core']],
       }
     }
+
+    # Tacker
+    if hiera('enable_tacker') {
+      pacemaker::resource::service { $::tacker::params::service_name :
+        clone_params => 'interleave=true',
+        require      => Pacemaker::Resource::Ocf['openstack-core'],
+      }
+
+      pacemaker::constraint::base { 'keystone-then-tacker-api-constraint':
+        constraint_type => 'order',
+        first_resource  => 'openstack-core-clone',
+        second_resource => "${::tacker::params::service_name}-clone",
+        first_action    => 'start',
+        second_action   => 'start',
+        require         => [Pacemaker::Resource::Service[$::tacker::params::service_name],
+          Pacemaker::Resource::Ocf['openstack-core']],
+      }
+    }
+
     # Glance
     pacemaker::resource::service { $::glance::params::registry_service_name :
       clone_params => 'interleave=true',

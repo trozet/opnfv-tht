@@ -341,6 +341,10 @@ parameters:
         Control the IP allocation for the StorageMgmgVirtualInterface port. E.g.
         [{'ip_address':'1.2.3.4'}]
     type: json
+  TackerPassword:
+    description: The password for the tacker service account.
+    type: string
+    hidden: true
   TimeZone:
     default: 'UTC'
     description: The timezone to be set on nodes.
@@ -738,6 +742,7 @@ parameters:
       SwiftMgmtNetwork: storage_mgmt
       SwiftProxyNetwork: storage
       SaharaApiNetwork: internal_api
+      TackerApiNetwork: internal_api
       HorizonNetwork: internal_api
       MemcachedNetwork: internal_api
       RabbitMqNetwork: internal_api
@@ -836,6 +841,12 @@ parameters:
   EnableSahara:
     default: true
     description: Whether to enable Sahara on the Controller
+    type: boolean
+
+# Tacker
+  EnableTacker:
+    default: false
+    description: Whether to enable Tacker on the Controller
     type: boolean
 
 # OpenDaylight specific parameters
@@ -960,6 +971,7 @@ resources:
       NovaApiVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, NovaApiNetwork]}]}
       SaharaApiVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, SaharaApiNetwork]}]}
       SwiftProxyVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, SwiftProxyNetwork]}]}
+      TackerApiVirtualIP: {get_attr: [VipMap, net_ip_uri_map, {get_param: [ServiceNetMap, TackerApiNetwork]}]}
       PublicVirtualIP: {get_attr: [VipMap, net_ip_uri_map, external]}
 
   OpenDaylightNode:
@@ -1023,6 +1035,7 @@ resources:
           EnableSwiftStorage: {get_param: ControllerEnableSwiftStorage}
           EnableCongress: {get_param: EnableCongress}
           EnableSahara: {get_param: EnableSahara}
+          EnableTacker: {get_param: EnableTacker}
           ExtraConfig: {get_param: ExtraConfig}
           FencingConfig: {get_param: FencingConfig}
           Flavor: {get_param: OvercloudControlFlavor}
@@ -1118,6 +1131,7 @@ resources:
           SwiftPartPower: {get_param: SwiftPartPower}
           SwiftPassword: {get_param: SwiftPassword}
           SwiftReplicas: { get_param: SwiftReplicas}
+          TackerPassword: {get_param: TackerPassword}
           TimeZone: {get_param: TimeZone}
           VirtualIP: {get_attr: [VipMap, net_ip_map, ctlplane]} # deprecated. Use per service VIP settings instead now.
           PublicVirtualIP: {get_attr: [VipMap, net_ip_map, external]}
@@ -1141,6 +1155,7 @@ resources:
           OpenDaylightApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, OpenDaylightApiNetwork]}]}
           NovaApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, NovaApiNetwork]}]}
           SaharaApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, SaharaApiNetwork]}]}
+          TackerApiVirtualIP: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, TackerApiNetwork]}]}
           UpdateIdentifier: {get_param: UpdateIdentifier}
           Hostname:
             str_replace:
@@ -1384,6 +1399,7 @@ resources:
       keystone_public_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, KeystonePublicApiNetwork]}]}
       keystone_admin_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, KeystoneAdminApiNetwork]}]}
       sahara_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, SaharaApiNetwork]}]}
+      tacker_api_node_ips: {get_attr: [ControllerIpListMap, net_ip_map, {get_param: [ServiceNetMap, TackerApiNetwork]}]}
       DeployIdentifier: {get_param: DeployIdentifier}
       UpdateIdentifier: {get_param: UpdateIdentifier}
 
@@ -1510,6 +1526,7 @@ resources:
         sahara_api_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, SaharaApiNetwork]}]}
         storage_virtual_ip: {get_attr: [VipMap, net_ip_map, storage]}
         storage_mgmt_virtual_ip: {get_attr: [VipMap, net_ip_map, storage_mgmt]}
+        tacker_api_vip: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, TackerApiNetwork]}]}
 
   ControllerBootstrapNodeConfig:
     type: OS::TripleO::BootstrapNode::SoftwareConfig
@@ -1814,6 +1831,9 @@ outputs:
   SwiftInternalVip:
     description: VIP for Swift Proxy internal endpoint
     value: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, SwiftProxyNetwork]}]}
+  TackerInternalVip:
+    description: VIP for Tacker API internal endpoint
+    value: {get_attr: [VipMap, net_ip_map, {get_param: [ServiceNetMap, TackerApiNetwork]}]}
   HostsEntry:
     description: |
       The content that should be appended to your /etc/hosts if you want to get

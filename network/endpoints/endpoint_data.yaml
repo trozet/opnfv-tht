@@ -201,3 +201,12 @@ Sahara:
         uri_suffixes:
             '': /v1.1/%(tenant_id)s
     port: 8386
+
+Tacker:
+    Internal:
+        vip_param: TackerApi
+    Public:
+        vip_param: Public
+    Admin:
+        vip_param: TackerApi
+    port: 8888

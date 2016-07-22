@@ -45,6 +45,14 @@ cinder::db::mysql::allowed_hosts:
   - '%'
   - "%{hiera('mysql_bind_host')}"
 
+# Congress
+congress::db::mysql::user: congress
+congress::db::mysql::host: "%{hiera('mysql_virtual_ip')}"
+congress::db::mysql::dbname: congress
+congress::db::mysql::allowed_hosts:
+  - '%'
+  - "%{hiera('mysql_bind_host')}"
+
 # Heat
 heat::db::mysql::user: heat
 heat::db::mysql::host: "%{hiera('mysql_virtual_ip')}"
@@ -68,10 +76,10 @@ sahara::db::mysql::allowed_hosts:
   - '%'
   - "%{hiera('mysql_bind_host')}"
 
-# Congress
-congress::db::mysql::user: congress
-congress::db::mysql::host: "%{hiera('mysql_virtual_ip')}"
-congress::db::mysql::dbname: congress
-congress::db::mysql::allowed_hosts:
+# Tacker
+tacker::db::mysql::user: tacker
+tacker::db::mysql::host: "%{hiera('mysql_virtual_ip')}"
+tacker::db::mysql::dbname: tacker
+tacker::db::mysql::allowed_hosts:
   - '%'
   - "%{hiera('mysql_bind_host')}"
