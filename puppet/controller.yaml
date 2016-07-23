@@ -1277,6 +1277,7 @@ resources:
               - '/ceilometer'
         enable_congress: {get_param: EnableCongress}
         congress_password: {get_param: CongressPassword}
+        congress_port: {get_param: [EndpointMap, CongressInternal, port]}
         congress_dsn:
           list_join:
             - ''
@@ -1702,6 +1703,7 @@ resources:
 
                 # Congress
                 congress::bind_host: {get_input: congress_api_network}
+                congress::bind_port: {get_input: congress_port}
                 congress::datasource_list: 'congress.datasources.neutronv2_driver.NeutronV2Driver,congress.datasources.glancev2_driver.GlanceV2Driver,congress.datasources.nova_driver.NovaDriver,congress.datasources.keystone_driver.KeystoneDriver,congress.datasources.ceilometer_driver.CeilometerDriver,congress.datasources.cinder_driver.CinderDriver,congress.datasources.doctor_driver.DoctorDriver'
                 congress::keystone_password: {get_input: congress_password}
                 congress::auth_uri: {get_input: keystone_auth_uri}
