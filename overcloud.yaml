@@ -845,7 +845,7 @@ parameters:
 
 # Tacker
   EnableTacker:
-    default: false
+    default: true
     description: Whether to enable Tacker on the Controller
     type: boolean
 

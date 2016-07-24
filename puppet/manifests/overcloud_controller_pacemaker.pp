@@ -648,6 +648,21 @@ MYSQL_HOST=localhost\n",
     exec { 'heat-sync-db-sleep':
       command => "sleep 5",
       path => "/usr/bin:/bin",
+    }->
+    class { '::congress::db::mysql': } ->
+    exec { 'congress-sync-db-sleep':
+      command => "sleep 5",
+      path    => "/usr/bin:/bin",
+    }
+
+    if hiera('enable_tacker') {
+      class { '::tacker::db::mysql':
+        require => Exec['congress-sync-db-sleep'],
+      }->
+      exec { 'tacker-sync-db-sleep':
+        command => "sleep 5",
+        path => "/usr/bin:/bin",
+      }
     }
 
     if downcase(hiera('ceilometer_backend')) == 'mysql' {
@@ -660,24 +675,7 @@ MYSQL_HOST=localhost\n",
         require => Class['::heat::db::mysql'],
       }
     }
-    if hiera('enable_congress') {
-      class { '::congress::db::mysql':
-        require => Exec['heat-sync-db-sleep']
-      }->
-      exec { 'congress-sync-db-sleep':
-        command => "sleep 5",
-        path => "/usr/bin:/bin",
-      }
-    }
-    if hiera('enable_tacker') {
-      class { '::tacker::db::mysql':
-        require => Class['::heat::db::mysql'],
-      }->
-      exec { 'tacker-sync-db-sleep':
-        command => "sleep 5",
-        path => "/usr/bin:/bin",
-      }
-    }
+
   }
 
   # pre-install swift here so we can build rings
@@ -1313,11 +1311,31 @@ private_network_range: ${private_subnet}/${private_mask}"
   }
 
   if hiera('enable_tacker') {
+    $tacker_init_conf = '[Unit]
+Description=OpenStack Tacker Server
+After=syslog.target network.target
+[Service]
+Type=notify
+NotifyAccess=all
+TimeoutStartSec=0
+Restart=always
+User=root
+ExecStart=/etc/init.d/tacker-server start
+ExecStop=/etc/init.d/tacker-server stop
+[Install]
+WantedBy=multi-user.target'
+
+    file { '/usr/lib/systemd/system/openstack-tacker.service':
+      ensure  => file,
+      content => $tacker_init_conf,
+      mode    => '0644'
+    }->
+    exec { 'reload_systemd':
+      command => 'systemctl daemon-reload',
+      path    => '/usr/sbin:/usr/bin:/sbin:/bin',
+    }->
     class { '::tacker':
       sync_db => $sync_db,
-    }
-
-    class { '::tacker::service':
       manage_service => false,
       enabled        => false,
     }
