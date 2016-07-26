@@ -349,5 +349,22 @@ class { '::snmp':
   snmpd_config => [ join(['createUser ', hiera('snmpd_readonly_user_name'), ' MD5 "', hiera('snmpd_readonly_user_password'), '"']), join(['rouser ', hiera('snmpd_readonly_user_name')]), 'proc  cron', 'includeAllDisks  10%', 'master agentx', 'trapsink localhost public', 'iquerySecName internalUser', 'rouser internalUser', 'defaultMonitors yes', 'linkUpDownNotifications yes' ],
 }
 
+# Configure host for live migration
+user { 'nova':
+  shell => '/bin/bash'
+}
+file { '/etc/ssh/ssh_known_hosts':
+  ensure => present,
+  owner  => 'root',
+  group  => 'root'
+} ~>
+# Add all overcloud nodes to known_hosts
+exec { 'populate_ssh_known_hosts':
+  command     => "for node in $(os-apply-config --key hosts --type raw --key-default '' | cut -d ' ' -f 1 | uniq); do if ! grep -q \$node /etc/ssh/ssh_known_hosts; then ssh-keyscan -t rsa \$node >> /etc/ssh/ssh_known_hosts; fi; done",
+  provider    => 'shell',
+  path        => ['/usr/bin', '/usr/sbin'],
+  refreshonly => true,
+}
+
 hiera_include('compute_classes')
 package_manifest{'/var/lib/tripleo/installed-packages/overcloud_compute': ensure => present}
