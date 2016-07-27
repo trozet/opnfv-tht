@@ -599,9 +599,15 @@ MYSQL_HOST=localhost\n",
     require        => File['/etc/sysconfig/clustercheck'],
   }
 
-  exec { 'sql-sleep':
-    command => "sleep 240 && echo 'SQL Sleep complete'",
+  exec { 'pcs_cleanup_1':
+    command => "sleep 120; for i in $(pcs status | grep '^* ' | cut -d ' ' -f 2 | cut -d '_' -f 1 | uniq); do pcs resource cleanup $i; done",
+    provider => shell,
     require => Exec['galera-ready'],
+    path     => '/usr/bin:/bin:/usr/sbin:/sbin'
+  } ->
+
+  exec { 'sql-sleep':
+    command => "sleep 120 && echo 'SQL Sleep complete'",
     path => "/usr/bin:/bin",
   }
 
@@ -2288,6 +2294,12 @@ if hiera('step') >= 4 {
 if hiera('step') >= 5 {
 
   if $pacemaker_master {
+
+    exec { 'pcs_cleanup_2':
+      command => "sleep 10; for i in $(pcs status | grep '^* ' | cut -d ' ' -f 2 | cut -d '_' -f 1 | uniq); do pcs resource cleanup $i; done",
+      provider => shell,
+      path     => '/usr/bin:/bin:/usr/sbin:/sbin'
+    } ->
 
     class {'::keystone::roles::admin' :
       require => Pacemaker::Resource::Service[$::apache::params::service_name],
