@@ -152,17 +152,17 @@ if hiera('step') >= 2 {
   }
 
   $rabbit_nodes = hiera('rabbit_node_ips')
+
+  $rabbit_ipv6 = str2bool(hiera('rabbit_ipv6', false))
+  if $rabbit_ipv6 {
+    $rabbit_env = merge(hiera('rabbitmq_environment'), {
+    'RABBITMQ_SERVER_START_ARGS' => '"-proto_dist inet6_tcp"'
+  })
+  } else {
+    $rabbit_env = hiera('rabbitmq_environment')
+  }
+
   if count($rabbit_nodes) > 1 {
-
-    $rabbit_ipv6 = str2bool(hiera('rabbit_ipv6', false))
-    if $rabbit_ipv6 {
-      $rabbit_env = merge(hiera('rabbitmq_environment'), {
-        'RABBITMQ_SERVER_START_ARGS' => '"-proto_dist inet6_tcp"'
-      })
-    } else {
-      $rabbit_env = hiera('rabbitmq_environment')
-    }
-
     class { '::rabbitmq':
       config_cluster          => true,
       cluster_nodes           => $rabbit_nodes,
@@ -178,7 +178,11 @@ if hiera('step') >= 2 {
       },
     }
   } else {
-    include ::rabbitmq
+    class { '::rabbitmq':
+      config_kernel_variables => hiera('rabbitmq_kernel_variables'),
+      config_variables        => hiera('rabbitmq_config_variables'),
+      environment_variables   => $rabbit_env,
+    }
   }
 
   # pre-install swift here so we can build rings
