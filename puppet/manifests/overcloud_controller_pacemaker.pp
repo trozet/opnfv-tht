@@ -1460,6 +1460,12 @@ WantedBy=multi-user.target'
     enabled        => false,
   }
 
+  class { '::congress':
+    sync_db => $sync_db,
+    manage_service => false,
+    enabled        => false,
+  }
+
   $snmpd_user = hiera('snmpd_readonly_user_name')
   snmp::snmpv3_user { $snmpd_user:
     authtype => 'MD5',
@@ -1612,23 +1618,18 @@ if hiera('step') >= 4 {
     }
 
     # Congress
-    if hiera('enable_congress') {
-      class { '::congress':
-        sync_db => $sync_db,
-      }
-      pacemaker::resource::service { $::congress::params::service_name :
-        clone_params => 'interleave=true',
-        require      => Pacemaker::Resource::Ocf['openstack-core'],
-      }
-      pacemaker::constraint::base { 'keystone-then-congress-api-constraint':
-        constraint_type => 'order',
-        first_resource  => 'openstack-core-clone',
-        second_resource => "${::congress::params::service_name}-clone",
-        first_action    => 'start',
-        second_action   => 'start',
-        require         => [Pacemaker::Resource::Service[$::congress::params::service_name],
-          Pacemaker::Resource::Ocf['openstack-core']],
-      }
+    pacemaker::resource::service { $::congress::params::service_name :
+      clone_params => 'interleave=true',
+      require      => Pacemaker::Resource::Ocf['openstack-core'],
+    }
+    pacemaker::constraint::base { 'keystone-then-congress-api-constraint':
+      constraint_type => 'order',
+      first_resource  => 'openstack-core-clone',
+      second_resource => "${::congress::params::service_name}-clone",
+      first_action    => 'start',
+      second_action   => 'start',
+      require         => [Pacemaker::Resource::Service[$::congress::params::service_name],
+        Pacemaker::Resource::Ocf['openstack-core']],
     }
     # Sahara
     if hiera('enable_sahara') {
