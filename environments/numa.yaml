@@ -1,7 +1,6 @@
 # A Heat environment file which can be used to enable
 # Numa on compute nodes
-#resource_registry:
-#  {numa}
+
 parameters:
   ExtraConfig:
     nova::scheduler::filter::scheduler_default_filters: [ RamFilter,ComputeFilter,AvailabilityZoneFilter,ComputeCapabilitiesFilter,ImagePropertiesFilter,PciPassthroughFilter,NUMATopologyFilter ]
@@ -11,5 +10,8 @@ parameter_defaults:
   NovaImage: 'overcloud-full'
   BlockStorageImage: 'overcloud-full'
   OvercloudComputeFlavor: baremetal
-  NeutronOVSDataPathType: 'netdev'
+  #NeutronOVSDataPathType: 'netdev'
+  PublicNIC: 'nic3'
+  TenantNIC: 'nic2'
+  FdioEnabled: false
 

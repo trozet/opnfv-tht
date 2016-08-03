@@ -1,13 +1,10 @@
 heat_template_version: 2015-04-30
 
-description: Compute node hieradata for NUMA configuration
+description: Controller node hieradata for NUMA configuration
 
 parameters:
   server:
-    description: ID of the compute node to apply this config to
-    type: string
-  LibvirtCPUPinSet:
-    description: A list or range of physical CPU cores to reserve for virtual machine processes
+    description: ID of the controller node to apply this config to
     type: string
   DpdkPmdDriver:
     description: Driver to use to bind dpdk NIC
@@ -27,7 +24,7 @@ parameters:
     default: false
 
 resources:
-  ComputeNumaConfig:
+  ControllerNumaConfig:
     type: OS::Heat::StructuredConfig
     properties:
       group: os-apply-config
@@ -36,40 +33,38 @@ resources:
           datafiles:
             numa:
               mapped_data:
-                nova::compute::vcpu_pin_set: {get_input: vcpu_pin_set}
                 dpdk_pmd_type: {get_input: dpdk_pmd_type}
                 fdio_enabled: {get_input: fdio_enabled}
                 fdio::params::dpdk_pmd_type: {get_input: dpdk_pmd_type}
                 public_nic: {get_input: public_nic}
                 tenant_nic: {get_input: tenant_nic}
 
-  ComputeNumaDeployment:
+  ControllerNumaDeployment:
     type: OS::Heat::StructuredDeployment
     properties:
-      config: {get_resource: ComputeNumaConfig}
+      config: {get_resource: ControllerNumaConfig}
       server: {get_param: server}
       input_values:
-        vcpu_pin_set: {get_param: LibvirtCPUPinSet}
         dpdk_pmd_type: {get_param: DpdkPmdDriver}
         fdio_enabled: {get_param: FdioEnabled}
         public_nic: {get_param: PublicNIC}
         tenant_nic: {get_param: TenantNIC}
 
-  ComputeNumaPuppetConfig:
+  ControllerNumaPuppetConfig:
     type: OS::Heat::SoftwareConfig
     properties:
       group: puppet
       config:
         get_file: manifests/dpdk_dataplanes.pp
 
-  ComputeNumaPuppetDeployment:
-    depends_on: ComputeNumaDeployment
+  ControllerNumaPuppetDeployment:
+    depends_on: ControllerNumaDeployment
     type: OS::Heat::StructuredDeployment
     properties:
       server: {get_param: server}
-      config: {get_resource: ComputeNumaPuppetConfig}
+      config: {get_resource: ControllerNumaPuppetConfig}
 
 outputs:
   deploy_stdout:
     description: Output of the extra hiera data deployment
-    value: {get_attr: [ComputeNumaDeployment, deploy_stdout]}
+    value: {get_attr: [ControllerNumaDeployment, deploy_stdout]}
