@@ -1451,6 +1451,27 @@ WantedBy=multi-user.target'
     enabled        => false,
   }
 
+$event_pipeline = "---
+sources:
+    - name: event_source
+      events:
+          - \"*\"
+      sinks:
+          - event_sink
+sinks:
+    - name: event_sink
+      transformers:
+      triggers:
+      publishers:
+          - notifier://?topic=alarm.all
+          - notifier://
+"
+
+  file { '/etc/ceilometer/event_pipeline.yaml':
+    ensure  => present,
+    content => $event_pipeline,
+  }
+
   class { '::congress':
     sync_db => $sync_db,
     manage_service => false,

@@ -802,6 +802,28 @@ private_network_range: ${private_subnet}/${private_mask}"
   include ::aodh::listener
   include ::aodh::client
 
+$event_pipeline = "---
+sources:
+    - name: event_source
+      events:
+          - \"*\"
+      sinks:
+          - event_sink
+sinks:
+    - name: event_sink
+      transformers:
+      triggers:
+      publishers:
+          - notifier://?topic=alarm.all
+          - notifier://
+"
+
+  file { '/etc/ceilometer/event_pipeline.yaml':
+    ensure  => present,
+    content => $event_pipeline,
+  }
+
+
   # Heat
   class { '::heat' :
     notification_driver => 'messaging',
