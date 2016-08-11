@@ -1429,6 +1429,7 @@ resources:
             - neutron_opencontrail_data # Optionally provided by ControllerExtraConfigPre
             - neutron_plumgrid_data # Optionally provided by ControllerExtraConfigPre
             - nic_mapping # holds the os-net-config logical to physical nic mapping
+            - numa # Optionally provided numa config
           datafiles:
             controller_extraconfig:
               mapped_data: {get_param: ControllerExtraConfig}
