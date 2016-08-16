@@ -1822,7 +1822,7 @@ resources:
                 tacker::bind_host: {get_input: tacker_api_network}
                 tacker::keystone_password: {get_input: tacker_password}
                 tacker::auth_uri: {get_input: keystone_auth_uri}
-                tacker::heat_uri: {get_input: keystone_auth_uri}
+                tacker::heat_uri: {get_param: [EndpointMap, HeatInternal, uri] }
                 tacker::identity_uri: {get_input: keystone_identity_uri}
                 tacker::database_connection: {get_input: tacker_dsn}
                 tacker::debug: {get_input: debug}
