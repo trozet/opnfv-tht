@@ -30,7 +30,7 @@ $dpdk_tenant_port = hiera("${tenant_nic}", false)
 
 if ! $dpdk_tenant_port { fail("Cannot find physical port name for logical port ${dpdk_tenant_port}")}
 
-$dpdk_tenant_pci_addr = inline_template("<%= `ethtool -i ${dpdk_tenant_port} | grep bus-info | awk {'print \$2'}` %>")
+$dpdk_tenant_pci_addr = inline_template("<%= `ethtool -i ${dpdk_tenant_port} | grep bus-info | awk {'print \$2'}`.chomp %>")
 
 if ! $dpdk_tenant_pci_addr { fail("Cannot find PCI address of ${dpdk_tenant_port}")}
 
