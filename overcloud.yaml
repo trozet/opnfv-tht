@@ -130,14 +130,19 @@ parameters:
     default: 'ctlplane'
     type: string
     description: Neutron ID or name for ctlplane network.
+  NeutronEnableDHCPMetadata:
+    default: false
+    description: If True, DHCP provide metadata network. Requires isolated or
+                 force metadata to be true as well.
+    type: boolean
   NeutronEnableIsolatedMetadata:
-    default: 'False'
+    default: false
     description: If True, DHCP provide metadata route to VM.
-    type: string
+    type: boolean
   NeutronEnableForceMetadata:
-    default: 'False'
+    default: false
     description: If True, DHCP always provides metadata route to VM.
-    type: string
+    type: boolean
   NeutronEnableTunnelling:
     type: string
     default: "True"

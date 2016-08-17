@@ -505,14 +505,19 @@ parameters:
     default: 'True'
     description: Allow automatic l3-agent failover
     type: string
+  NeutronEnableDHCPMetadata:
+    default: false
+    description: If True, DHCP provide metadata network. Requires isolated or
+                 force metadata to be true as well.
+    type: boolean
   NeutronEnableIsolatedMetadata:
-    default: 'False'
+    default: false
     description: If True, DHCP provide metadata route to VM.
-    type: string
+    type: boolean
   NeutronEnableForceMetadata:
-    default: 'False'
+    default: false
     description: If True, DHCP always provides metadata route to VM.
-    type: string
+    type: boolean
   NeutronEnableTunnelling:
     type: string
     default: "True"
@@ -1050,6 +1055,7 @@ resources:
         swift_workers: {get_param: SwiftWorkers}
         neutron_enable_tunneling: {get_param: NeutronEnableTunnelling}
         neutron_enable_l2pop: {get_param: NeutronEnableL2Pop}
+        neutron_enable_dhcp_metadata: {get_param: NeutronEnableDHCPMetadata}
         neutron_enable_isolated_metadata: {get_param: NeutronEnableIsolatedMetadata}
         neutron_enable_force_metadata: {get_param: NeutronEnableForceMetadata}
         haproxy_log_address: {get_param: HAProxySyslogAddress}
@@ -1657,6 +1663,7 @@ resources:
                 neutron::agents::metadata::metadata_ip: {get_input: neutron_api_network}
                 neutron::agents::metadata::metadata_workers: {get_input: neutron_workers}
                 neutron::agents::dhcp::enable_force_metadata: {get_input: neutron_enable_force_metadata}
+                neutron::agents::dhcp::enable_metadata_network: {get_input: neutron_enable_dhcp_metadata}
                 neutron_agent_mode: {get_input: neutron_agent_mode}
                 neutron_tenant_network: {get_input: neutron_tenant_network}
                 neutron_router_distributed: {get_input: neutron_router_distributed}
