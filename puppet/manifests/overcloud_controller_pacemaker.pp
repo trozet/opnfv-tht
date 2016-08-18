@@ -85,6 +85,7 @@ if hiera('step') >= 1 {
     }
     include ::ceph::conf
     include ::ceph::profile::mon
+    Class['ceph::profile::mon'] ~> Exec['enable_ceph_on_boot']
   }
 
   if str2bool(hiera('enable_ceph_storage', false)) {
@@ -104,8 +105,14 @@ if hiera('step') >= 1 {
 
     include ::ceph::conf
     include ::ceph::profile::osd
+    Class['ceph::profile::osd'] ~> Exec['enable_ceph_on_boot']
   }
 
+  exec { 'enable_ceph_on_boot':
+    command     => 'chkconfig ceph on',
+    refreshonly => true,
+    path        => '/usr/sbin:/usr/bin:/sbin:/bin',
+  }
 
 
   $controller_node_ips = split(hiera('controller_node_ips'), ',')
@@ -303,7 +310,7 @@ if hiera('step') >= 1 {
     command => 'sleep 30',
     path    => "/usr/bin:/bin",
   }
-    
+
   if $pacemaker_master {
     if $enable_load_balancer {
       pacemaker::resource::ocf { 'galera' :
@@ -569,7 +576,7 @@ if hiera('step') >= 2 {
       controllers_ip => $controller_node_ips
     }
   }
-  
+
   exec { 'galera-ready' :
     command     => '/usr/bin/clustercheck >/dev/null',
     timeout     => 30,

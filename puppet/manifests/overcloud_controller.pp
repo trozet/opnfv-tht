@@ -203,6 +203,8 @@ if hiera('step') >= 2 {
     }
     include ::ceph::conf
     include ::ceph::profile::mon
+
+    Class['ceph::profile::mon'] ~> Exec['enable_ceph_on_boot']
   }
 
   if str2bool(hiera('enable_ceph_storage', false)) {
@@ -222,6 +224,7 @@ if hiera('step') >= 2 {
 
     include ::ceph::conf
     include ::ceph::profile::osd
+    Class['ceph::profile::osd'] ~> Exec['enable_ceph_on_boot']
   }
 
   if str2bool(hiera('enable_external_ceph', false)) {
@@ -235,6 +238,12 @@ if hiera('step') >= 2 {
     }
     include ::ceph::conf
     include ::ceph::profile::client
+  }
+
+  exec { 'enable_ceph_on_boot':
+    command     => 'chkconfig ceph on',
+    refreshonly => true,
+    path        => '/usr/sbin:/usr/bin:/sbin:/bin',
   }
 
 } #END STEP 2
