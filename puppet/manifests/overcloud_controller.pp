@@ -528,7 +528,9 @@ private_network_range: ${private_subnet}/${private_mask}"
           }
 
           # Setup honeycomb
-          include ::fdio::honeycomb::service
+          class { '::honeycomb':
+            rest_port => '8182',
+          }
 
           # TODO(trozet): configure OVS here for br-ex with L3 AGENT
 
