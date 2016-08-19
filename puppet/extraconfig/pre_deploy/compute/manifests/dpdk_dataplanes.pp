@@ -52,7 +52,10 @@ if hiera('fdio_enabled', false) {
     hasrestart => true,
     restart    => '/usr/bin/systemctl restart openvswitch',
   }
-
+  file { "vpp dpdk_bind_lock file":
+    path   => '/root/dpdk_bind_lock',
+    ensure => present
+  }->
   class { '::fdio::vpp':
     dpdk_pci_devs => [ $dpdk_tenant_pci_addr ],
   }
