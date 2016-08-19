@@ -275,8 +275,9 @@ private_network_range: ${private_subnet}/${private_mask}"
       }
 
       # Setup honeycomb
-      include ::fdio::honeycomb::service
-
+      class { '::honeycomb':
+        rest_port => '8182',
+      }
     } else {
       class { '::neutron::plugins::ovs::opendaylight':
         tunnel_ip             => $private_ip,
