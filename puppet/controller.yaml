@@ -507,8 +507,9 @@ parameters:
     type: string
   NeutronEnableDHCPMetadata:
     default: false
-    description: If True, DHCP provide metadata network. Requires isolated or
-                 force metadata to be true as well.
+    description: >
+      If True, DHCP provide metadata network. Requires isolated or
+      force metadata to be true as well.
     type: boolean
   NeutronEnableIsolatedMetadata:
     default: false

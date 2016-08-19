@@ -132,8 +132,9 @@ parameters:
     description: Neutron ID or name for ctlplane network.
   NeutronEnableDHCPMetadata:
     default: false
-    description: If True, DHCP provide metadata network. Requires isolated or
-                 force metadata to be true as well.
+    description: >
+      If True, DHCP provide metadata network. Requires isolated or
+      force metadata to be true as well.
     type: boolean
   NeutronEnableIsolatedMetadata:
     default: false
@@ -1115,6 +1116,7 @@ resources:
           NeutronNetworkType: {get_param: NeutronNetworkType}
           NeutronTunnelTypes: {get_param: NeutronTunnelTypes}
           NeutronEnableForceMetadata: {get_param: NeutronEnableForceMetadata}
+          NeutronEnableDHCPMetadata: {get_param: NeutronEnableDHCPMetadata}
           NovaIPv6: {get_param: NovaIPv6}
           NovaPassword: {get_param: NovaPassword}
           NtpServer: {get_param: NtpServer}
