@@ -1046,9 +1046,9 @@ private_network_range: ${private_subnet}/${private_mask}"
       $ctrlplane_interface = hiera('nic1')
       if ! $ctrlplane_interface { fail("Cannot map logical interface NIC1 to physical interface")}
       $vpp_ip = inline_template("<%= scope.lookupvar('::ipaddress_${ctrlplane_interface}') -%>")
-      $fdio_data_template='{"node" : [{"node-id":"<%= @hostname %>","netconf-node-topology:host":"<%= @vpp_ip %>","netconf-node-topology:port":"2830","netconf-node-topology:tcp-only":false,"netconf-node-topology:keepalive-delay":0,"netconf-node-topology:username":"<%= @odl_username %>","netconf-node-topology:password":"<%= @odl_password %>","netconf-node-topology:connection-timeout-millis":10000,"netconf-node-topology:default-request-timeout-millis":10000,"netconf-node-topology:max-connection-attempts":10,"netconf-node-topology:between-attempts-timeout-millis":10000,"netconf-node-topology:schema-cache-directory":"hcmount"}]}'
+      $fdio_data_template='{"node" : [{"node-id":"<%= @hostname %>","netconf-node-topology:host":"<%= @vpp_ip %>","netconf-node-topology:port":"2831","netconf-node-topology:tcp-only":false,"netconf-node-topology:keepalive-delay":0,"netconf-node-topology:username":"<%= @odl_username %>","netconf-node-topology:password":"<%= @odl_password %>","netconf-node-topology:connection-timeout-millis":10000,"netconf-node-topology:default-request-timeout-millis":10000,"netconf-node-topology:max-connection-attempts":10,"netconf-node-topology:between-attempts-timeout-millis":10000,"netconf-node-topology:schema-cache-directory":"hcmount"}]}'
       $fdio_data = inline_template($fdio_data_template)
-      $fdio_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/restconf/config/network-topology:network-topology/network-topology:topology/topology-netconf"
+      $fdio_url = "http://${opendaylight_controller_ip}:${opendaylight_port}/restconf/config/network-topology:network-topology/network-topology:topology/topology-netconf/node/${hostname}"
       exec { 'VPP Mount into ODL':
         command   => "curl -o /dev/null --fail --silent -u ${odl_username}:${odl_password} ${fdio_url} -i -H 'Content-Type: application/json' --data \'${fdio_data}\' -X PUT",
         tries     => 5,
@@ -1057,7 +1057,7 @@ private_network_range: ${private_subnet}/${private_mask}"
       }
 
       # Setup honeycomb
-      class { '::honeycomb':
+      class { '::fdio::honeycomb':
         rest_port => '8182',
       }
 
