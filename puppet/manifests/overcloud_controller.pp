@@ -387,6 +387,10 @@ if hiera('step') >= 3 {
   include ::neutron::server
   include ::neutron::server::notifications
 
+  neutron_config {
+    'DEFAULT/host': value => $fqdn;
+  }
+
   # If the value of core plugin is set to 'nuage' or'opencontrail' or 'plumgrid',
   # include nuage or opencontrail or plumgrid core plugins
   # else use the default value of 'ml2'

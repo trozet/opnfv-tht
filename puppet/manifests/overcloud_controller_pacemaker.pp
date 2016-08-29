@@ -888,6 +888,11 @@ if hiera('step') >= 3 {
   }
 
   include ::neutron::config
+
+  neutron_config {
+    'DEFAULT/host': value => $fqdn;
+  }
+
   class { '::neutron::server' :
     sync_db        => $sync_db,
     manage_service => false,
