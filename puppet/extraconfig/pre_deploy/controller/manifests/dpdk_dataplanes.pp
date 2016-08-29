@@ -63,5 +63,5 @@ if hiera('fdio_enabled', false) {
   }
 
 } else {
-  fail ("Non FDIO dataplane unsupported on control nodes")
+  warning("Non FDIO dataplane unsupported on control nodes")
 }
