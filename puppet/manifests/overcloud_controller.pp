@@ -536,11 +536,6 @@ private_network_range: ${private_subnet}/${private_mask}"
             path      => '/usr/sbin:/usr/bin:/sbin:/bin',
           }
 
-          # Setup honeycomb
-          class { '::fdio::honeycomb':
-            rest_port => '8182',
-          }
-
           # TODO(trozet): configure OVS here for br-ex with L3 AGENT
 
         } else {
