@@ -34,6 +34,7 @@ $dpdk_tenant_pci_addr = inline_template("<%= `ethtool -i ${dpdk_tenant_port} | g
 
 if ! $dpdk_tenant_pci_addr { fail("Cannot find PCI address of ${dpdk_tenant_port}")}
 
+if hiera('fdio_enabled', false) {
 $dpdk_tenant_port_ip_var = "ipaddress_$dpdk_tenant_port"
 $dpdk_tenant_port_ip = inline_template("<%= scope.lookupvar(@dpdk_tenant_port_ip_var) %>")
 if ! $dpdk_tenant_port_ip { fail("Cannot find IP address of ${dpdk_tenant_port}")}
@@ -41,9 +42,6 @@ if ! $dpdk_tenant_port_ip { fail("Cannot find IP address of ${dpdk_tenant_port}"
 $dpdk_tenant_port_netmask_var = "netmask_$dpdk_tenant_port"
 $dpdk_tenant_port_cidr = inline_template("<%= require 'ipaddr'; IPAddr.new(scope.lookupvar(@dpdk_tenant_port_netmask_var)).to_i.to_s(2).count('1') %>")
 if ! $dpdk_tenant_port_cidr { fail("Cannot find cidr of ${dpdk_tenant_port}")}
-
-
-if hiera('fdio_enabled', false) {
 
 #  $public_nic = hiera('public_nic')
 
