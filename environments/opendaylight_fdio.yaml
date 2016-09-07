@@ -29,6 +29,7 @@ parameters:
       opendaylight_install: true
       fdio: true
       neutron::agents::dhcp::interface_driver: "neutron.agent.linux.interface.NSDriver"
+      neutron::agents::l3::interface_driver: "neutron.agent.linux.interface.NSDriver"
 
 parameter_defaults:
     NeutronEnableOVSAgent: false
