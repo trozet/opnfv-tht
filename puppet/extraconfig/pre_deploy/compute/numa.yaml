@@ -9,6 +9,7 @@ parameters:
   LibvirtCPUPinSet:
     description: A list or range of physical CPU cores to reserve for virtual machine processes
     type: string
+    default: '<SERVICE DEFAULT>'
   DpdkPmdDriver:
     description: Driver to use to bind dpdk NIC
     type: string
