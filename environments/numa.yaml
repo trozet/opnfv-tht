@@ -3,7 +3,7 @@
 
 parameters:
   ExtraConfig:
-    nova::scheduler::filter::scheduler_default_filters: [ RamFilter,ComputeFilter,AvailabilityZoneFilter,ComputeCapabilitiesFilter,ImagePropertiesFilter,PciPassthroughFilter,NUMATopologyFilter ]
+    nova::scheduler::filter::scheduler_default_filters: [ RamFilter,ComputeFilter,AvailabilityZoneFilter,ComputeCapabilitiesFilter,ImagePropertiesFilter,PciPassthroughFilter,NUMATopologyFilter,AggregateInstanceExtraSpecFilter ]
 
 parameter_defaults:
   #LibvirtCPUPinSet: '1'
