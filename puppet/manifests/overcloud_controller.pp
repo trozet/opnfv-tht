@@ -565,6 +565,29 @@ private_network_range: ${private_subnet}/${private_mask}"
           'onos/url_path': value => "http://${controller_node_ips[0]}:${onos_port}/onos/vtn";
         }
 
+      } elsif 'vpp' in hiera('neutron::plugins::ml2::mechanism_drivers') {
+        $tenant_nic = hiera('tenant_nic')
+        $dpdk_tenant_port = hiera("${tenant_nic}", false)
+        if ! $dpdk_tenant_port { fail("Cannot find physical port name for logical port ${dpdk_tenant_port}")}
+
+        $controller_ips = hiera('controller_node_ips')
+        if ! $controller_ips { fail("failed to get controller node ips") }
+        $compute_ips = hiera('compute_node_ips')
+        if ! $compute_ips { fail("failed to get compute node ips") }
+
+        $tenant_nic_vpp_str = hiera("${dpdk_tenant_port}_vpp_str", false)
+        if ! $tenant_nic_vpp_str { fail("Cannot find vpp_str for tenant nic ${dpdk_tenant_port}")}
+
+        $tenant_vpp_int = inline_template("<%= `vppctl show int | grep $tenant_nic_vpp_str | awk {'print \$1'}`.chomp -%>")
+        if ! $tenant_vpp_int { fail("VPP interface not found for $tenant_nic_vpp_str")}
+
+        class { '::neutron::plugins::ml2::networking-vpp':
+          agents => join(suffix(prefix(concat([], $controller_ips, $compute_ips), 'http://'), ':2704/'), ','),
+        }->
+        class {'::neutron::agents::ml2::networking-vpp':
+          physnets        => "datacentre:$tenant_vpp_int",
+          flat_network_if => $tenant_vpp_int,
+        }
       } else {
 
         include ::neutron::agents::ml2::ovs

@@ -273,7 +273,6 @@ private_network_range: ${private_subnet}/${private_mask}"
         try_sleep => 30,
         path      => '/usr/sbin:/usr/bin:/sbin:/bin',
       }
-
     } else {
       class { '::neutron::plugins::ovs::opendaylight':
         tunnel_ip             => $private_ip,
@@ -287,6 +286,21 @@ private_network_range: ${private_subnet}/${private_mask}"
     $controller_ips = split(hiera('controller_node_ips'), ',')
     class { 'onos::ovs_computer':
       manager_ip => $controller_ips[0]
+    }
+  } elsif 'vpp' in hiera('neutron::plugins::ml2::mechanism_drivers') {
+    $tenant_nic = hiera('tenant_nic')
+    $dpdk_tenant_port = hiera("${tenant_nic}", false)
+    if ! $dpdk_tenant_port { fail("Cannot find physical port name for logical port ${dpdk_tenant_port}")}
+
+    $tenant_nic_vpp_str = hiera("${dpdk_tenant_port}_vpp_str", false)
+    if ! $tenant_nic_vpp_str { fail("Cannot find vpp_str for tenant nic ${dpdk_tenant_port}")}
+
+    $tenant_vpp_int = inline_template("<%= `vppctl show int | grep $tenant_nic_vpp_str | awk {'print \$1'}`.chomp -%>")
+    if ! $tenant_vpp_int { fail("VPP interface not found for $tenant_nic_vpp_str")}
+
+    class {'::neutron::agents::ml2::networking-vpp':
+      physnets        => "datacentre:$tenant_vpp_int",
+      flat_network_if => $tenant_vpp_int,
     }
 
   } else {

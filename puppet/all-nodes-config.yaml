@@ -4,6 +4,8 @@ description: 'All Nodes Config for Puppet'
 parameters:
   compute_hosts:
     type: comma_delimited_list
+  compute_ips:
+    type: comma_delimited_list
   controller_hosts:
     type: comma_delimited_list
   controller_ips:
@@ -109,6 +111,10 @@ resources:
                   list_join:
                   - ','
                   - {get_param: opendaylight_ip}
+                compute_node_ips:
+                  list_join:
+                  - ','
+                  - {get_param: compute_ips}
                 controller_node_ips:
                   list_join:
                   - ','
