@@ -69,7 +69,7 @@ if ! $dpdk_tenant_port_cidr { fail("Cannot find cidr of ${dpdk_tenant_port}")}
     fdio_ips           => [ "${dpdk_tenant_port_ip}/${dpdk_tenant_port_cidr}" ],
   }
 
-  if 'opendaylight' in hiera('neutron::plugins::ml2::mechanism_drivers') {
+  if ! empty(grep(hiera('neutron::plugins::ml2::mechanism_drivers'), 'opendaylight')) {
     class { '::fdio::honeycomb':
       rest_port => '8182',
       require   => Class['::fdio'],

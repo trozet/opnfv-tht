@@ -19,7 +19,7 @@ parameters:
     NeutronL3HA: false
     OpenDaylightEnableHA: false
     OpenDaylightFeatures: "odl-netconf-connector-all,odl-vbd,odl-groupbasedpolicy-neutron-vpp-mapper,odl-restconf"
-    NeutronMechanismDrivers: 'opendaylight'
+    NeutronMechanismDrivers: 'opendaylight_v2'
     NeutronNetworkType: 'vxlan'
     NeutronServicePlugins: 'router'
     ExtraConfig:

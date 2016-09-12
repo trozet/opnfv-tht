@@ -980,7 +980,7 @@ if hiera('step') >= 3 {
     include ::neutron::agents::bigswitch
   }
 
-  if 'opendaylight' in hiera('neutron::plugins::ml2::mechanism_drivers') {
+  if ! empty(grep(hiera('neutron::plugins::ml2::mechanism_drivers'), 'opendaylight')) {
     if str2bool(hiera('opendaylight_install', 'false')) {
       $controller_ips = split(hiera('controller_node_ips'), ',')
       if hiera('opendaylight_enable_ha', false) {

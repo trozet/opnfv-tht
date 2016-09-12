@@ -453,7 +453,7 @@ if hiera('step') >= 3 {
         'DEFAULT/ovs_use_veth': value => hiera('neutron_ovs_use_veth', false);
       }
 
-      if 'opendaylight' in hiera('neutron::plugins::ml2::mechanism_drivers') {
+  if ! empty(grep(hiera('neutron::plugins::ml2::mechanism_drivers'), 'opendaylight')) {
 
         if str2bool(hiera('opendaylight_install', 'false')) {
           $controller_ips = split(hiera('controller_node_ips'), ',')
