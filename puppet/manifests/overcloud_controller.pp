@@ -572,7 +572,7 @@ private_network_range: ${private_subnet}/${private_mask}"
 
         $controller_ips = hiera('controller_node_ips')
         if ! $controller_ips { fail("failed to get controller node ips") }
-        $compute_ips = hiera('compute_node_ips')
+        $compute_ips = split(hiera('compute_node_ips'), ',')
         if ! $compute_ips { fail("failed to get compute node ips") }
 
         $tenant_nic_vpp_str = hiera("${dpdk_tenant_port}_vpp_str", false)

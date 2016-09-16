@@ -11,8 +11,7 @@ parameters:
     fdio: true
     # Use Linux Bridge driver for now.
     neutron::agents::dhcp::interface_driver: "neutron.agent.linux.interface.BridgeInterfaceDriver"
-    #neutron::agents::dhcp::interface_driver: "neutron.agent.linux.interface.NSDriver"
-    #neutron::agents::l3::interface_driver: "neutron.agent.linux.interface.NSDriver"
+    neutron::agents::l3::interface_driver: "neutron.agent.linux.interface.BridgeInterfaceDriver"
 
 parameter_defaults:
     NeutronEnableOVSAgent: false
