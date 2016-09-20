@@ -11,7 +11,9 @@ parameter_defaults:
   BlockStorageImage: 'overcloud-full'
   OvercloudComputeFlavor: baremetal
   #NeutronOVSDataPathType: 'netdev'
-  PublicNIC: 'nic3'
-  TenantNIC: 'nic2'
+  ControllerTenantNIC: 'nic2'
+  ComputeTenantNIC: 'nic2'
+  ControllerPublicNIC: 'nic3'
+  ComputePublicNIC: 'nic3'
   FdioEnabled: false
 

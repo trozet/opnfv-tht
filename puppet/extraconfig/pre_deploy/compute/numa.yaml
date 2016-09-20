@@ -18,11 +18,11 @@ parameters:
     description: Whether to configure vpp/fdio
     type: boolean
     default: false
-  PublicNIC:
+  ComputePublicNIC:
     description: Logical NIC used for public network
     type: string
     default: false
-  TenantNIC:
+  ComputeTenantNIC:
     description: Logical NIC used for tenant network
     type: string
     default: false
@@ -53,8 +53,8 @@ resources:
         vcpu_pin_set: {get_param: LibvirtCPUPinSet}
         dpdk_pmd_type: {get_param: DpdkPmdDriver}
         fdio_enabled: {get_param: FdioEnabled}
-        public_nic: {get_param: PublicNIC}
-        tenant_nic: {get_param: TenantNIC}
+        public_nic: {get_param: ComputePublicNIC}
+        tenant_nic: {get_param: ComputeTenantNIC}
 
   ComputeNumaPuppetConfig:
     type: OS::Heat::SoftwareConfig

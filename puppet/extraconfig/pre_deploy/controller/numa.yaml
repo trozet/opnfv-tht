@@ -14,11 +14,11 @@ parameters:
     description: Whether to configure vpp/fdio
     type: boolean
     default: false
-  PublicNIC:
+  ControllerPublicNIC:
     description: Logical NIC used for public network
     type: string
     default: false
-  TenantNIC:
+  ControllerTenantNIC:
     description: Logical NIC used for tenant network
     type: string
     default: false
@@ -47,8 +47,8 @@ resources:
       input_values:
         dpdk_pmd_type: {get_param: DpdkPmdDriver}
         fdio_enabled: {get_param: FdioEnabled}
-        public_nic: {get_param: PublicNIC}
-        tenant_nic: {get_param: TenantNIC}
+        public_nic: {get_param: ControllerPublicNIC}
+        tenant_nic: {get_param: ControllerTenantNIC}
 
   ControllerNumaPuppetConfig:
     type: OS::Heat::SoftwareConfig
