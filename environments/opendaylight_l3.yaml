@@ -7,7 +7,6 @@ parameters:
     NeutronMechanismDrivers: 'opendaylight'
     NeutronNetworkType: 'vxlan'
     NeutronL3HA: false
-    NeutronServicePlugins: 'router'
     ExtraConfig:
       opendaylight_install: true
 

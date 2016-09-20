@@ -18,11 +18,10 @@ parameters:
     ControllerEnableSwiftStorage: false
     OpenDaylightFeatures: "odl-vpnservice-openstack"
     NeutronL3HA: false
-    NeutronServicePlugins: "router,qos,networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin"
+    NeutronServicePlugins: "router,networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin"
     NeutronNetworkType: 'vxlan'
     NeutronMechanismDrivers: 'opendaylight'
     NeutronEnableForceMetadata: true
-    NeutronServicePlugins: 'router'
     ExtraConfig:
       tripleo::ringbuilder::build_ring: False
       # Enable this if you want OpenDaylight on the contollers
