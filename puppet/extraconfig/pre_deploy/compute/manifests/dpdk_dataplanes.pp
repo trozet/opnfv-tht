@@ -136,5 +136,10 @@ if ! $dpdk_tenant_port_cidr { fail("Cannot find cidr of ${dpdk_tenant_port}")}
     unless  => 'ovs-vsctl list-ports br-tun | grep patch-br-tun',
     path    => '/usr/sbin:/usr/bin:/sbin:/bin',
   }
+  ->
+  exec { 'bring up br-phy interface':
+    command => 'ifup br-phy',
+    path    => '/usr/sbin:/usr/bin:/sbin:/bin',
+  }
 
 }

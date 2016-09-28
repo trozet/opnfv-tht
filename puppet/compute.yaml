@@ -118,6 +118,10 @@ parameters:
     default: 'br-ex'
     description: An OVS bridge to create for accessing external networks.
     type: string
+  NeutronOVSDataPathType:
+    default: 'system'
+    description: Data Path for OVS
+    type: string
   NeutronPublicInterface:
     default: nic1
     description: A port to add to the NeutronPhysicalBridge.
@@ -582,6 +586,7 @@ resources:
                 neutron::rabbit_user: {get_input: rabbit_username}
                 neutron::rabbit_use_ssl: {get_input: rabbit_client_use_ssl}
                 neutron::rabbit_port: {get_input: rabbit_client_port}
+                neutron::agents::ml2::ovs::datapath_type: {get_input: ovs_datapath_type}
                 neutron::plugins::ml2::flat_networks: {get_input: neutron_flat_networks}
                 opendaylight_port: {get_input: opendaylight_port}
                 opendaylight_username: {get_input: opendaylight_username}
@@ -712,6 +717,7 @@ resources:
         neutron_enable_tunneling: {get_param: NeutronEnableTunnelling}
         neutron_enable_l2pop: {get_param: NeutronEnableL2Pop}
         neutron_physical_bridge: {get_param: NeutronPhysicalBridge}
+        ovs_datapath_type: {get_param: NeutronOVSDataPathType}
         neutron_public_interface: {get_param: NeutronPublicInterface}
         neutron_password: {get_param: NeutronPassword}
         neutron_agent_mode: {get_param: NeutronAgentMode}
