@@ -298,9 +298,10 @@ private_network_range: ${private_subnet}/${private_mask}"
     $tenant_vpp_int = inline_template("<%= `vppctl show int | grep $tenant_nic_vpp_str | awk {'print \$1'}`.chomp -%>")
     if ! $tenant_vpp_int { fail("VPP interface not found for $tenant_nic_vpp_str")}
 
+    $controller_ips = split(hiera('controller_node_ips'), ',')
     class {'::neutron::agents::ml2::networking-vpp':
-      physnets        => "datacentre:$tenant_vpp_int",
-      flat_network_if => $tenant_vpp_int,
+      physnets  => "datacentre:$tenant_vpp_int",
+      etcd_host => $controller_ips[0],
     }
 
   } else {

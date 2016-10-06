@@ -709,6 +709,27 @@ MYSQL_HOST=localhost\n",
     include ::ceph::profile::client
   }
 
+  if 'vpp' in hiera('neutron::plugins::ml2::mechanism_drivers') {
+    $controller_names = split(hiera('controller_node_names'), ',')
+    $controller_ip = hiera('neutron::bind_host')
+    class { 'etcd':
+      etcd_name => $::hostname,
+      listen_client_urls          => "http://$controller_ip:2379,http://$controller_ip:4001,http://localhost:4001",
+      advertise_client_urls       => "http://$controller_ip:2379,http://$controller_ip:4001,http://localhost:4001",
+      listen_peer_urls            => "http://$controller_ip:2380",
+      initial_advertise_peer_urls => "http://$controller_ip:2380",
+      initial_cluster_token       => 'etcd-cluster-1',
+      proxy                       => 'off',
+      initial_cluster             => regsubst($controller_names, '.+', '\0=http://\0:2380')
+    }->
+    exec { 'etcd-ready':
+      command     => '/bin/etcdctl cluster-health >/dev/null',
+      timeout     => 30,
+      tries       => 5,
+      try_sleep   => 10,
+    }
+  }
+
 
 } #END STEP 2
 
@@ -1088,11 +1109,6 @@ private_network_range: ${private_subnet}/${private_mask}"
     $dpdk_tenant_port = hiera("${tenant_nic}", false)
     if ! $dpdk_tenant_port { fail("Cannot find physical port name for logical port ${dpdk_tenant_port}")}
 
-    $controller_ips = split(hiera('controller_node_ips'), ',')
-    if ! $controller_ips { fail("failed to get controller node ips") }
-    $compute_ips = split(hiera('compute_node_ips'), ',')
-    if ! $compute_ips { fail("failed to get compute node ips") }
-
     $tenant_nic_vpp_str = hiera("${dpdk_tenant_port}_vpp_str", false)
     if ! $tenant_nic_vpp_str { fail("Cannot find vpp_str for tenant nic ${dpdk_tenant_port}")}
 
@@ -1100,11 +1116,11 @@ private_network_range: ${private_subnet}/${private_mask}"
     if ! $tenant_vpp_int { fail("VPP interface not found for $tenant_nic_vpp_str")}
 
     class { '::neutron::plugins::ml2::networking-vpp':
-      agents => join(suffix(prefix(concat([], $controller_ips, $compute_ips), 'http://'), ':2704/'), ','),
+      etcd_host => $controller_ip,
     }->
     class {'::neutron::agents::ml2::networking-vpp':
-      physnets        => "datacentre:$tenant_vpp_int",
-      flat_network_if => $tenant_vpp_int,
+      physnets  => "datacentre:$tenant_vpp_int",
+      etcd_host => $controller_ip,
     }
   } else {
     class { '::neutron::agents::l3' :
