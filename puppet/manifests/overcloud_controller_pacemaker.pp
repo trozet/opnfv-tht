@@ -955,13 +955,6 @@ if hiera('step') >= 3 {
     }
   }
 
-  # SDNVPN Hack
-  if ('networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin' in hiera('neutron::service_plugins')) {
-    neutron_config {
-      'service_providers/service_provider': value => 'BGPVPN:OpenDaylight:networking_bgpvpn.neutron.services.service_drivers.opendaylight.odl.OpenDaylightBgpvpnDriver:default';
-    }
-  }
-
   if hiera('neutron::enable_metadata_agent',true) {
     class { '::neutron::agents::metadata':
       manage_service => false,

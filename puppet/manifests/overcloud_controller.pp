@@ -428,12 +428,6 @@ if hiera('step') >= 3 {
       metadata_proxy_shared_secret => hiera('nova::api::neutron_metadata_proxy_shared_secret'),
     }
   } else {
-    # SDNVPN Hack
-    if ('networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin' in hiera('neutron::service_plugins')) {
-      neutron_config {
-        'service_providers/service_provider': value => 'BGPVPN:OpenDaylight:networking_bgpvpn.neutron.services.service_drivers.opendaylight.odl.OpenDaylightBgpvpnDriver:default';
-      }
-    }
 
     if ! ('onos_router' in hiera('neutron::service_plugins')) and ! str2bool(hiera('opendaylight_enable_l3', 'no')) {
       include ::neutron::agents::l3

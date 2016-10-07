@@ -28,6 +28,6 @@ parameters:
       # reduce OpenDaylightCount to 0 if you don't want any
       # OpenDaylight only nodes
       opendaylight_install: true
-
+      neutron::server::service_providers: [ 'BGPVPN:OpenDaylight:networking_bgpvpn.neutron.services.service_drivers.opendaylight.odl.OpenDaylightBgpvpnDriver:default' ]
 parameter_defaults:
     NeutronEnableOVSAgent: false
