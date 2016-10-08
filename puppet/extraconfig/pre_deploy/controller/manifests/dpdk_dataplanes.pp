@@ -45,6 +45,12 @@ if ! $dpdk_tenant_port_cidr { fail("Cannot find cidr of ${dpdk_tenant_port}")}
 
 
 if hiera('fdio_enabled', false) {
+  if ! empty(grep(hiera('neutron::plugins::ml2::tenant_network_types'), 'vlan')) {
+    $enable_vlan = true
+  } else {
+    $enable_vlan = false
+  }
+
   file { "vpp dpdk_bind_lock file":
     path   => '/root/dpdk_bind_lock',
     ensure => present
@@ -53,6 +59,7 @@ if hiera('fdio_enabled', false) {
     fdio_dpdk_pci_devs => [ $dpdk_tenant_pci_addr ],
     fdio_nic_names     => [ $dpdk_tenant_port ],
     fdio_ips           => [ "${dpdk_tenant_port_ip}/${dpdk_tenant_port_cidr}" ],
+    vlan               => $enable_vlan,
   }
 
   if ! empty(grep(hiera('neutron::plugins::ml2::mechanism_drivers'), 'opendaylight')) {
