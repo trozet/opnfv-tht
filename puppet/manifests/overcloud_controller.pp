@@ -577,7 +577,7 @@ private_network_range: ${private_subnet}/${private_mask}"
 
       } elsif 'vpp' in hiera('neutron::plugins::ml2::mechanism_drivers') {
         $tenant_nic = hiera('tenant_nic')
-        $dpdk_tenant_port = hiera("${tenant_nic}", false)
+        $dpdk_tenant_port = hiera("${tenant_nic}", $tenant_nic)
         if ! $dpdk_tenant_port { fail("Cannot find physical port name for logical port ${dpdk_tenant_port}")}
 
         $tenant_nic_vpp_str = hiera("${dpdk_tenant_port}_vpp_str", false)

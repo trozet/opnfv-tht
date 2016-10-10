@@ -26,7 +26,7 @@ file_line {'selinux':
 }
 $tenant_nic = hiera('tenant_nic')
 
-$dpdk_tenant_port = hiera("${tenant_nic}", false)
+$dpdk_tenant_port = hiera("${tenant_nic}", $tenant_nic)
 
 if ! $dpdk_tenant_port { fail("Cannot find physical port name for logical port ${dpdk_tenant_port}")}
 
