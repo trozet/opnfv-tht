@@ -34,6 +34,12 @@ $dpdk_tenant_pci_addr = inline_template("<%= `ethtool -i ${dpdk_tenant_port} | g
 
 if ! $dpdk_tenant_pci_addr { fail("Cannot find PCI address of ${dpdk_tenant_port}")}
 
+if ! empty(grep(hiera('neutron::plugins::ml2::tenant_network_types'), 'vlan')) {
+  $enable_vlan = true
+} else {
+  $enable_vlan = false
+}
+
 if hiera('fdio_enabled', false) {
 $dpdk_tenant_port_ip_var = "ipaddress_$dpdk_tenant_port"
 $dpdk_tenant_port_ip = inline_template("<%= scope.lookupvar(@dpdk_tenant_port_ip_var) %>")
@@ -52,12 +58,6 @@ if ! $dpdk_tenant_port_cidr { fail("Cannot find cidr of ${dpdk_tenant_port}")}
 #  $dpdk_public_pci_addr = inline_template("<%= `ethtool -i ${dpdk_public_port} | grep bus-info | awk {'print \$2'}` %>")
 
 #  if ! $dpdk_public_pci_addr { fail("Cannot find PCI address of ${dpdk_public_port}")}
-
-  if ! empty(grep(hiera('neutron::plugins::ml2::tenant_network_types'), 'vlan')) {
-    $enable_vlan = true
-  } else {
-    $enable_vlan = false
-  }
 
   service { "openvswitch":
     ensure     => "stopped",
@@ -147,6 +147,13 @@ if ! $dpdk_tenant_port_cidr { fail("Cannot find cidr of ${dpdk_tenant_port}")}
   exec { 'bring up br-phy interface':
     command => 'ifup br-phy',
     path    => '/usr/sbin:/usr/bin:/sbin:/bin',
+  }
+  if ! $enable_vlan {
+    exec { 'configure ucs enic workaround':
+      command => "ovs-ofctl add-flow br-phy 'table=0,priority=65535,actions=strip_vlan,NORMAL'",
+      path    => '/usr/sbin:/usr/bin:/sbin:/bin',
+      require => Exec['bring up br-phy interface'],
+    }
   }
 
 }
