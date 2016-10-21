@@ -1834,7 +1834,8 @@ resources:
                 tacker::auth_uri: {get_input: keystone_auth_uri}
                 tacker::heat_uri:
                   list_join:
-                    - get_param: [EndpointMap, HeatInternal, uri_no_suffix]
+                  - ''                                                                  
+                  - - get_param: [EndpointMap, HeatInternal, uri_no_suffix]
                     - /v1
                 tacker::identity_uri: {get_input: keystone_identity_uri}
                 tacker::database_connection: {get_input: tacker_dsn}
