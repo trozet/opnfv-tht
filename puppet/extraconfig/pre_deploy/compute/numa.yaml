@@ -10,7 +10,7 @@ parameters:
     description: A list or range of physical CPU cores to reserve for virtual machine processes
     type: string
     default: '<SERVICE DEFAULT>'
-  DpdkPmdDriver:
+  ComputeUIODriver:
     description: Driver to use to bind dpdk NIC
     type: string
     default: "uio_pci_generic"
@@ -26,6 +26,14 @@ parameters:
     description: Logical NIC used for tenant network
     type: string
     default: false
+  ComputeVPPMainCore:
+    description: VPP main thread pinning
+    type: string
+    default: ''
+  ComputeVPPCorelistWorkers:
+    description: List of cores for VPP worker thread pinning
+    type: string
+    default: ''
 
 resources:
   ComputeNumaConfig:
@@ -43,6 +51,8 @@ resources:
                 fdio::params::dpdk_pmd_type: {get_input: dpdk_pmd_type}
                 public_nic: {get_input: public_nic}
                 tenant_nic: {get_input: tenant_nic}
+                vpp_main_core: {get_input: vpp_main_core}
+                vpp_corelist_workers: {get_input: vpp_corelist_workers}
 
   ComputeNumaDeployment:
     type: OS::Heat::StructuredDeployment
@@ -51,10 +61,12 @@ resources:
       server: {get_param: server}
       input_values:
         vcpu_pin_set: {get_param: LibvirtCPUPinSet}
-        dpdk_pmd_type: {get_param: DpdkPmdDriver}
+        dpdk_pmd_type: {get_param: ComputeUIODriver}
         fdio_enabled: {get_param: FdioEnabled}
         public_nic: {get_param: ComputePublicNIC}
         tenant_nic: {get_param: ComputeTenantNIC}
+        vpp_main_core: {get_param: ComputeVPPMainCore}
+        vpp_corelist_workers: {get_param: ComputeVPPCorelistWorkers}
 
   ComputeNumaPuppetConfig:
     type: OS::Heat::SoftwareConfig

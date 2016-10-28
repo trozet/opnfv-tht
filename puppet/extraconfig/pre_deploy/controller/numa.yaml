@@ -6,7 +6,7 @@ parameters:
   server:
     description: ID of the controller node to apply this config to
     type: string
-  DpdkPmdDriver:
+  ControllerUIODriver:
     description: Driver to use to bind dpdk NIC
     type: string
     default: "uio_pci_generic"
@@ -22,7 +22,14 @@ parameters:
     description: Logical NIC used for tenant network
     type: string
     default: false
-
+  ControllerVPPMainCore:
+    description: VPP main thread pinning
+    type: string
+    default: ''
+  ControllerVPPCorelistWorkers:
+    description: List of cores for VPP worker thread pinning
+    type: string
+    default: ''
 resources:
   ControllerNumaConfig:
     type: OS::Heat::StructuredConfig
@@ -38,6 +45,8 @@ resources:
                 fdio::params::dpdk_pmd_type: {get_input: dpdk_pmd_type}
                 public_nic: {get_input: public_nic}
                 tenant_nic: {get_input: tenant_nic}
+                vpp_main_core: {get_input: vpp_main_core}
+                vpp_corelist_workers: {get_input: vpp_corelist_workers}
 
   ControllerNumaDeployment:
     type: OS::Heat::StructuredDeployment
@@ -45,10 +54,12 @@ resources:
       config: {get_resource: ControllerNumaConfig}
       server: {get_param: server}
       input_values:
-        dpdk_pmd_type: {get_param: DpdkPmdDriver}
+        dpdk_pmd_type: {get_param: ControllerUIODriver}
         fdio_enabled: {get_param: FdioEnabled}
         public_nic: {get_param: ControllerPublicNIC}
         tenant_nic: {get_param: ControllerTenantNIC}
+        vpp_main_core: {get_param: ControllerVPPMainCore}
+        vpp_corelist_workers: {get_param: ControllerVPPCorelistWorkers}
 
   ControllerNumaPuppetConfig:
     type: OS::Heat::SoftwareConfig

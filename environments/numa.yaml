@@ -15,5 +15,11 @@ parameter_defaults:
   ComputeTenantNIC: 'nic2'
   ControllerPublicNIC: 'nic3'
   ComputePublicNIC: 'nic3'
+  #ControllerVPPMainCore: '1'
+  #ControllerVPPCorelistWorkers: '2'
+  #ControllerUIODriver: 'uio_pci_generic'
+  #ComputeVPPMainCore: '1'
+  #ComputeVPPCorelistWorkers: '2'
+  #ComputeUIODriver: 'uio_pci_generic'
   FdioEnabled: false
 
