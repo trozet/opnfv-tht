@@ -75,8 +75,8 @@ if ! $dpdk_tenant_port_cidr { fail("Cannot find cidr of ${dpdk_tenant_port}")}
     fdio_nic_names     => [ $dpdk_tenant_port ],
     fdio_ips           => [ "${dpdk_tenant_port_ip}/${dpdk_tenant_port_cidr}" ],
     vlan               => $enable_vlan,
-    main_core          => hiera('vpp_main_core'),
-    corelist_workers   => hiera('vpp_corelist_workers'),
+    main_core          => hiera('vpp_main_core', ''),
+    corelist_workers   => hiera('vpp_corelist_workers', ''),
   }
 
   if ! empty(grep(hiera('neutron::plugins::ml2::mechanism_drivers'), 'opendaylight')) {
