@@ -96,6 +96,7 @@
     - OS::TripleO::Services::FluentdClient
     - OS::TripleO::Services::VipHosts
     - OS::TripleO::Services::Etcd
+    - OS::TripleO::Services::Gluon
 
 - name: Compute
   CountDefault: 1
