@@ -1,2 +1,6 @@
 resource_registry:
+  OS::TripleO::Services::Etcd: ../../puppet/services/etcd.yaml
   OS::TripleO::Services::Gluon: ../../puppet/services/gluon.yaml
+
+parameter_defaults:
+  NeutronCorePlugin: gluon
