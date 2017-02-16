@@ -53,3 +53,6 @@ parameter_defaults:
     SwiftAdmin: {protocol: 'http', port: '8080', host: 'IP_ADDRESS'}
     SwiftInternal: {protocol: 'http', port: '8080', host: 'IP_ADDRESS'}
     SwiftPublic: {protocol: 'https', port: '13808', host: 'CLOUDNAME'}
+    TackerAdmin: {protocol: 'http', port: '9890', host: 'IP_ADDRESS'}
+    TackerInternal: {protocol: 'http', port: '9890', host: 'IP_ADDRESS'}
+    TackerPublic: {protocol: 'https', port: '13989', host: 'CLOUDNAME'}
