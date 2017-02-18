@@ -17,6 +17,10 @@ parameters:
     type: string
     description: The password for the opendaylight server.
     hidden: true
+  OpenDaylightConnectionProtocol:
+    description: L7 protocol used for REST access
+    type: string
+    default: 'http'
   OpenDaylightEnableL3:
     description: Knob to enable/disable ODL L3
     type: string
@@ -30,6 +34,14 @@ parameters:
     type: comma_delimited_list
     default: ["odl-netvirt-openstack","odl-netvirt-ui","odl-jolokia"]
   OpenDaylightApiVirtualIP:
+    type: string
+    default: ''
+  OpenDaylightPortBindingController:
+    description: OpenDaylight port binding controller
+    type: string
+    default: ''
+  OpenDaylightHostconfURI:
+    description: URI for neutron hostconfig in OpenDaylight.
     type: string
     default: ''
   EndpointMap:
@@ -60,6 +72,9 @@ outputs:
         opendaylight::extra_features: {get_param: OpenDaylightFeatures}
         opendaylight::enable_dhcp: {get_param: OpenDaylightEnableDHCP}
         opendaylight::odl_bind_ip: {get_param: [ServiceNetMap, OpendaylightApiNetwork]}
+        opendaylight::nb_connection_protocol: {get_param: OpenDaylightConnectionProtocol}
+        neutron::plugins::ml2::opendaylight::port_binding_controller: {get_param: OpenDaylightPortBindingController}
+        neutron::plugins::ml2::opendaylight::odl_hostconf_uri: {get_param: OpenDaylightHostconfURI}
         tripleo.opendaylight_api.firewall_rules:
               '137 opendaylight api':
                 dport:

@@ -208,6 +208,8 @@ resource_registry:
   OS::TripleO::Services::SensuClient: OS::Heat::None
   OS::TripleO::Services::Etcd: OS::Heat::None
   OS::TripleO::Services::Gluon: OS::Heat::None
+  OS::TripleO::Services::Vpp: OS::Heat::None
+  OS::TripleO::Services::NeutronHoneycombAgent: OS::Heat::None
 
 parameter_defaults:
   EnablePackageInstall: false
