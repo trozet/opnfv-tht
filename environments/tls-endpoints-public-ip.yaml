@@ -14,6 +14,9 @@ parameter_defaults:
     CinderAdmin: {protocol: 'http', port: '8776', host: 'IP_ADDRESS'}
     CinderInternal: {protocol: 'http', port: '8776', host: 'IP_ADDRESS'}
     CinderPublic: {protocol: 'https', port: '13776', host: 'IP_ADDRESS'}
+    CongressAdmin: {protocol: 'http', port: '1789', host: 'IP_ADDRESS'}
+    CongressInternal: {protocol: 'http', port: '1789', host: 'IP_ADDRESS'}
+    CongressPublic: {protocol: 'https', port: '13789', host: 'IP_ADDRESS'}
     GlanceAdmin: {protocol: 'http', port: '9292', host: 'IP_ADDRESS'}
     GlanceInternal: {protocol: 'http', port: '9292', host: 'IP_ADDRESS'}
     GlancePublic: {protocol: 'https', port: '13292', host: 'IP_ADDRESS'}
