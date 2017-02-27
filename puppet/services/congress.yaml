@@ -68,6 +68,11 @@ outputs:
               - "%{hiera('tripleo::profile::base::database::mysql::client_bind_address')}"
         congress::keystone::auth::tenant: 'service'
         congress::keystone::auth::password: {get_param: CongressPassword}
+        congress::keystone::auth::public_url: {get_param: [EndpointMap, CongressPublic, uri]}
+        congress::keystone::auth::internal_url: {get_param: [EndpointMap, CongressInternal, uri]}
+        congress::keystone::auth::admin_url: {get_param: [EndpointMap, CongressAdmin, uri]}
+        congress::keystone::authtoken::project_name: 'service'
+        congress::keystone::authtoken::auth_url: {get_param: [EndpointMap, KeystoneAdmin, uri_no_suffix]}
         congress::keystone::authtoken::password: {get_param: CongressPassword}
         congress::keystone::authtoken::auth_uri: {get_param: [EndpointMap, KeystoneInternal, uri]}
         congress::debug: {get_param: Debug}
