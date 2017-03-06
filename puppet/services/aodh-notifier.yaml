@@ -40,3 +40,10 @@ outputs:
         get_attr: [AodhBase, role_data, config_settings]
       step_config: |
         include tripleo::profile::base::aodh::notifier
+
+      service_config_settings:
+        ceilometer:
+          ceilometer::agent::notification::manage_event_pipeline: true
+          ceilometer::agent::notification::event_pipeline_publishers:
+            - notifier://?topic=alarm.all
+            - notifier://
