@@ -9,8 +9,8 @@ resource_registry:
 
 parameter_defaults:
   NeutronEnableForceMetadata: true
-  NeutronMechanismDrivers: 'opendaylight_v2'
-  NeutronServicePlugins: "odl-router_v2,networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin"
+  NeutronMechanismDrivers: 'opendaylight'
+  NeutronServicePlugins: "odl-router,networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin"
   NeutronNetworkType: 'vxlan'
   ExtraConfig:
     neutron::server::service_providers: [ 'BGPVPN:OpenDaylight:networking_bgpvpn.neutron.services.service_drivers.opendaylight.odl.OpenDaylightBgpvpnDriver:default' ]
