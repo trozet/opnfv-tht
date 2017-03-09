@@ -84,7 +84,7 @@ outputs:
               '"%{::fqdn_$NETWORK}"'
             params:
               $NETWORK: {get_param: [ServiceNetMap, MysqlNetwork]}
-        tripleo::profile::base::database::mysql:generate_dropin_file_limit:
+        tripleo::profile::base::database::mysql::generate_dropin_file_limit:
           {get_param: MysqlIncreaseFileLimit}
       step_config: |
         include ::tripleo::profile::base::database::mysql
