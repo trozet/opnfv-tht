@@ -79,8 +79,10 @@ outputs:
               '137 opendaylight api':
                 dport:
                   - {get_param: OpenDaylightPort}
+                  - 2550
+                  - 6633
                   - 6640
                   - 6653
-                  - 2550
+                  - 8101
       step_config: |
         include tripleo::profile::base::neutron::opendaylight
