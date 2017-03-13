@@ -26,8 +26,8 @@ parameters:
     default: ''
     description: List of cores for VPP worker thread pinning
     type: string
-  MonitoringSubscriptionEtcd:
-    default: 'overcloud-etcd'
+  MonitoringSubscriptionVpp:
+    default: 'overcloud-vpp'
     type: string
 
 outputs:

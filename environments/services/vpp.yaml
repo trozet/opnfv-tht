@@ -1,7 +1,7 @@
 resource_registry:
   OS::TripleO::Services::Vpp: ../../puppet/services/vpp.yaml
 
-parameter_defaults:
+#parameter_defaults:
   #VPP main thread core pinning
   #VppCpuMainCore: '1'
 
