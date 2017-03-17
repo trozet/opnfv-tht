@@ -101,6 +101,7 @@
     - OS::TripleO::Services::Tacker
     - OS::TripleO::Services::Vpp
     - OS::TripleO::Services::NeutronHoneycombAgent
+    - OS::TripleO::Services::NeutronVppAgent
 
 - name: Compute
   CountDefault: 1
@@ -129,7 +130,7 @@
     - OS::TripleO::Services::VipHosts
     - OS::TripleO::Services::Vpp
     - OS::TripleO::Services::NeutronHoneycombAgent
-
+    - OS::TripleO::Services::NeutronVppAgent
 
 - name: BlockStorage
   ServicesDefault:
