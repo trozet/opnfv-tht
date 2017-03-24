@@ -1,0 +1,25 @@
+# A Heat environment that can be used to deploy OpenDaylight with L3 DVR with DPDK support
+resource_registry:
+  OS::TripleO::Services::NeutronOvsAgent: OS::Heat::None
+  OS::TripleO::Services::ComputeNeutronOvsAgent: OS::Heat::None
+  OS::TripleO::Services::ComputeNeutronCorePlugin: OS::Heat::None
+  OS::TripleO::Services::OpenDaylightApi: ../puppet/services/opendaylight-api.yaml
+  OS::TripleO::Services::OpenDaylightOvs: ../puppet/services/opendaylight-ovs-dpdk.yaml
+  OS::TripleO::Services::NeutronL3Agent: OS::Heat::None
+
+parameter_defaults:
+  NeutronEnableForceMetadata: true
+  NeutronMechanismDrivers: 'opendaylight_v2'
+  NeutronServicePlugins: 'odl-router_v2'
+  OpenDaylightEnableL3: "'yes'"
+  #NeutronDpdkCoreList: "'1'"
+  #NeutronDpdkMemoryChannels: "1"
+
+  NeutronDatapathType: "netdev"
+  NeutronVhostuserSocketDir: "/var/run/openvswitch"
+
+  #NeutronDpdkSocketMemory: "1024"
+  #NeutronDpdkDriverType: "uio_pci_generic"
+  #NovaReservedHostMemory: 4096
+  NovaVcpuPinSet: "3"
+
