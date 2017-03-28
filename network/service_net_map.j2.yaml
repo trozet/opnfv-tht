@@ -61,6 +61,7 @@ parameters:
       EtcdNetwork: internal_api
       GluonNetwork: internal_api
       HoneycombNetwork: internal_api
+      OvnDbsNetwork: internal_api
       # We special-case the default ResolveNetwork for the CephStorage role
       # for backwards compatibility, all other roles default to internal_api
       CephStorageHostnameResolveNetwork: storage

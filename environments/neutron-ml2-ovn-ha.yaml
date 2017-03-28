@@ -9,7 +9,7 @@ resource_registry:
 # Disabling Neutron services that overlap with OVN
   OS::TripleO::Services::NeutronDhcpAgent: OS::Heat::None
   OS::TripleO::Services::ComputeNeutronOvsAgent: OS::Heat::None
-  OS::TripleO::Services::OVNDBs: ../puppet/services/ovn-dbs.yaml
+  OS::TripleO::Services::OVNDBs: ../puppet/services/pacemaker/ovn-dbs.yaml
 
 parameter_defaults:
   NeutronMechanismDrivers: ovn

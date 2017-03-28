@@ -18,9 +18,6 @@ parameters:
                  via parameter_defaults in the resource registry.  This
                  mapping overrides those in ServiceNetMapDefaults.
     type: json
-  OVNDbHost:
-    description: IP address on which the OVN DB servers are listening
-    type: string
   OVNSouthboundServerPort:
     description: Port of the Southbound DB Server
     type: number
@@ -29,6 +26,16 @@ parameters:
     description: Tunnel encapsulation type
     type: string
     default: geneve
+  NeutronBridgeMappings:
+    description: >
+      The OVS logical->physical bridge mappings to use. See the Neutron
+      documentation for details. Defaults to mapping br-ex - the external
+      bridge on hosts - to a physical name 'datacentre' which can be used
+      to create provider networks (and we use this for the default floating
+      network) - if changing this either use different post-install network
+      scripts or be sure to keep 'datacentre' as a mapping network name
+    type: comma_delimited_list
+    default: "datacentre:br-ex"
 
 
 outputs:
@@ -37,9 +44,16 @@ outputs:
     value:
       service_name: neutron_compute_plugin_ovn
       config_settings:
-        tripleo::profile::base::neutron::agents::ovn::ovn_db_host: {get_param: OVNDbHost}
         ovn::southbound::port: {get_param: OVNSouthboundServerPort}
-        ovn::southbound::encap_type: {get_param: OVNTunnelEncapType}
+        ovn::controller::ovn_encap_type: {get_param: OVNTunnelEncapType}
         ovn::controller::ovn_encap_ip: {get_param: [ServiceNetMap, NeutronApiNetwork]}
+        ovn::controller::ovn_bridge_mappings: {get_param: NeutronBridgeMappings}
+        tripleo.neutron_compute_plugin_ovn.firewall_rules:
+          '118 neutron vxlan networks':
+                proto: 'udp'
+                dport: 4789
+          '119 neutron geneve networks':
+            proto: 'udp'
+            dport: 6081
       step_config: |
         include ::tripleo::profile::base::neutron::agents::ovn

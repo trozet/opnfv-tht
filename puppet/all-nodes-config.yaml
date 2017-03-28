@@ -37,6 +37,9 @@ parameters:
   RedisVirtualIP:
     type: string
     default: ''
+  OVNDbsVirtualIP:
+    type: string
+    default: ''
   ServiceNetMap:
     type: json
   DeployIdentifier:
@@ -177,6 +180,7 @@ resources:
                     storage_virtual_ip: {get_param: [NetVipMap, storage]}
                     storage_mgmt_virtual_ip: {get_param: [NetVipMap, storage_mgmt]}
                     redis_vip: {get_param: RedisVirtualIP}
+                    ovn_dbs_vip: {get_param: OVNDbsVirtualIP}
                     # public_virtual_ip and controller_virtual_ip are needed in
                     # both HAproxy & keepalived.
                     tripleo::haproxy::public_virtual_ip: {get_param: [NetVipMap, external]}
@@ -187,6 +191,7 @@ resources:
                     tripleo::keepalived::storage_virtual_ip: {get_param: [NetVipMap, storage]}
                     tripleo::keepalived::storage_mgmt_virtual_ip: {get_param: [NetVipMap, storage_mgmt]}
                     tripleo::keepalived::redis_virtual_ip: {get_param: RedisVirtualIP}
+                    tripleo::keepalived::ovndbs_virtual_ip: {get_param: OVNDbsVirtualIP}
                     tripleo::redis_notification::haproxy_monitor_ip: {get_param: [NetVipMap, ctlplane]}
                     cloud_name_external: {get_param: cloud_name_external}
                     cloud_name_internal_api: {get_param: cloud_name_internal_api}

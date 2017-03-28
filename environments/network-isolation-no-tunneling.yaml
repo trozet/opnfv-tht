@@ -8,6 +8,7 @@ resource_registry:
   OS::TripleO::Network::InternalApi: ../network/internal_api.yaml
   OS::TripleO::Network::StorageMgmt: ../network/storage_mgmt.yaml
   OS::TripleO::Network::Storage: ../network/storage.yaml
+  OS::TripleO::Network::Ports::OVNDbsVipPort: ../network/ports/vip.yaml
 
   # Port assignments for the controller role
   OS::TripleO::Controller::Ports::ExternalPort: ../network/ports/external.yaml

@@ -17,6 +17,7 @@ resource_registry:
   OS::TripleO::Network::Ports::StorageVipPort: ../network/ports/storage.yaml
   OS::TripleO::Network::Ports::StorageMgmtVipPort: ../network/ports/storage_mgmt.yaml
   OS::TripleO::Network::Ports::RedisVipPort: ../network/ports/vip.yaml
+  OS::TripleO::Network::Ports::OVNDbsVipPort: ../network/ports/vip.yaml
 
   # Port assignments for service virtual IPs for the controller role
   OS::TripleO::Controller::Ports::RedisVipPort: ../network/ports/vip.yaml

@@ -102,6 +102,7 @@
     - OS::TripleO::Services::Vpp
     - OS::TripleO::Services::NeutronHoneycombAgent
     - OS::TripleO::Services::NeutronVppAgent
+    - OS::TripleO::Services::OVNDBs
 
 - name: Compute
   CountDefault: 1

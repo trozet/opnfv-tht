@@ -15,6 +15,7 @@ resource_registry:
   OS::TripleO::Network::Ports::StorageVipPort: ../network/ports/storage_v6.yaml
   OS::TripleO::Network::Ports::StorageMgmtVipPort: ../network/ports/storage_mgmt_v6.yaml
   OS::TripleO::Network::Ports::RedisVipPort: ../network/ports/vip_v6.yaml
+  OS::TripleO::Network::Ports::OVNDbsVipPort: ../network/ports/vip_v6.yaml
 
   # Port assignments for the controller role
   OS::TripleO::Controller::Ports::ExternalPort: ../network/ports/external_v6.yaml
