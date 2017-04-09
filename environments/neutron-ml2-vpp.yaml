@@ -15,6 +15,7 @@ parameter_defaults:
   NeutronMechanismDrivers: vpp
   NeutronNetworkType: vlan
   NeutronServicePlugins: router
+  NeutronL3HA: false
   NeutronTypeDrivers: vlan,flat
   ExtraConfig:
     # Use Linux Bridge driver for DHCP and L3 agent.
