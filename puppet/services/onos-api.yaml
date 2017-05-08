@@ -1,0 +1,43 @@
+heat_template_version: 2016-04-08
+
+description: >
+  ONOS SDN Controller.
+
+parameters:
+  ONOSPort:
+    default: 8081
+    description: Set onos service port
+    type: number
+ 
+  EndpointMap:
+    default: {}
+    description: Mapping of service endpoint -> protocol. Typically set
+                 via parameter_defaults in the resource registry.
+    type: json
+  ServiceNetMap:
+    default: {}
+    description: Mapping of service_name -> network name. Typically set
+                 via parameter_defaults in the resource registry.  This
+                 mapping overrides those in ServiceNetMapDefaults.
+    type: json
+  DefaultPasswords:
+    default: {}
+    type: json
+
+outputs:
+  role_data:
+    description: Role data for the ONOS service.
+    value:
+      service_name: onos_api
+      config_settings:
+        tripleo.onos_api.firewall_rules:
+              '137 onos api':
+                dport:
+                  - {get_param: ONOSPort}
+                  - 2550
+                  - 6633
+                  - 6640
+                  - 6653
+                  - 8101
+      step_config: |
+        include tripleo::profile::base::neutron::onos

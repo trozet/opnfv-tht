@@ -58,6 +58,7 @@ parameters:
       CephRgwNetwork: storage
       PublicNetwork: external
       OpendaylightApiNetwork: internal_api
+      OnosApiNetwork: internal_api
       EtcdNetwork: internal_api
       GluonNetwork: internal_api
       HoneycombNetwork: internal_api

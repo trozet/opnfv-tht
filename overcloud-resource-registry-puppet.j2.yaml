@@ -209,6 +209,8 @@ resource_registry:
   OS::TripleO::Services::TripleoFirewall: puppet/services/tripleo-firewall.yaml
   OS::TripleO::Services::OpenDaylightApi: OS::Heat::None
   OS::TripleO::Services::OpenDaylightOvs: OS::Heat::None
+  OS::TripleO::Services::ONOSApi: OS::Heat::None
+  OS::TripleO::Services::ONOSOvs: OS::Heat::None
   OS::TripleO::Services::SensuClient: OS::Heat::None
   OS::TripleO::Services::Etcd: OS::Heat::None
   OS::TripleO::Services::Gluon: OS::Heat::None

@@ -1,0 +1,13 @@
+# A Heat environment that can be used to deploy OpenDaylight
+resource_registry:
+  OS::TripleO::Services::NeutronOvsAgent: OS::Heat::None
+  OS::TripleO::Services::ComputeNeutronOvsAgent: OS::Heat::None
+  OS::TripleO::Services::ComputeNeutronCorePlugin: OS::Heat::None
+  OS::TripleO::Services::ONOSApi: ../puppet/services/onos-api.yaml
+  OS::TripleO::Services::ONOSOvs: ../puppet/services/onos-ovs.yaml
+  OS::TripleO::Services::NeutronL3Agent: OS::Heat::None
+
+parameter_defaults:
+  NeutronEnableForceMetadata: true
+  NeutronMechanismDrivers: 'onos_ml2'
+  NeutronServicePlugins: 'onos_router'

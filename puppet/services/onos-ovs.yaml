@@ -1,0 +1,36 @@
+heat_template_version: 2016-04-08
+
+description: >
+  Onos OVS Configuration.
+parameters:
+  EndpointMap:
+    default: {}
+    description: Mapping of service endpoint -> protocol. Typically set
+                 via parameter_defaults in the resource registry.
+    type: json
+  ServiceNetMap:
+    default: {}
+    description: Mapping of service_name -> network name. Typically set
+                 via parameter_defaults in the resource registry.  This
+                 mapping overrides those in ServiceNetMapDefaults.
+    type: json
+  DefaultPasswords:
+    default: {}
+    type: json
+
+
+
+outputs:
+  role_data:
+    description: Role data for the Onos service.
+    value:
+      service_name: onos_ovs
+      config_settings:
+        tripleo.onos_ovs.firewall_rules:
+          '118 neutron vxlan networks':
+             proto: 'udp'
+             dport: 4790
+          '136 neutron gre networks':
+             proto: 'gre'
+      step_config: |
+        include tripleo::profile::base::neutron::plugins::ovs::onos
