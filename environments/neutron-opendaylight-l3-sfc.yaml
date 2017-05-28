@@ -1,0 +1,15 @@
+# A Heat environment that can be used to deploy OpenDaylight with L3 DVR and SFC
+resource_registry:
+  OS::TripleO::Services::NeutronOvsAgent: OS::Heat::None
+  OS::TripleO::Services::ComputeNeutronOvsAgent: OS::Heat::None
+  OS::TripleO::Services::ComputeNeutronCorePlugin: OS::Heat::None
+  OS::TripleO::Services::OpenDaylightApi: ../puppet/services/opendaylight-api.yaml
+  OS::TripleO::Services::OpenDaylightOvs: ../puppet/services/opendaylight-ovs.yaml
+  OS::TripleO::Services::NeutronL3Agent: OS::Heat::None
+
+parameter_defaults:
+  NeutronEnableForceMetadata: true
+  NeutronMechanismDrivers: 'opendaylight_v2'
+  NeutronServicePlugins: 'odl-router_v2,sfc,flow_classifier'
+  OpenDaylightEnableL3: "'yes'"
+  OpenDaylightFeatures: ["odl-netvirt-openstack","odl-jolokia","odl-netvirt-openstack-sfc-translator","odl-ovsdb-sfc-rest","odl-sfc-core","odl-sfc-ui"]
