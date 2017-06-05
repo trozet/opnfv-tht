@@ -66,6 +66,12 @@ parameters:
         By default Intel & Mellanox SR-IOV capable NICs are supported.
     type: comma_delimited_list
     default: ['15b3:1004','8086:10ca']
+  NeutronOverlayIPVersion:
+    default: '"4"'
+    description: IP version used for all overlay network endpoints.
+    type: string
+    constraints:
+    - allowed_values: ['"4"','"6"']
 resources:
 
   NeutronBase:
@@ -124,6 +130,7 @@ outputs:
                 params:
                   TYPES: {get_param: NeutronNetworkType}
             neutron::plugins::ml2::supported_pci_vendor_devs: {get_param: NeutronSupportedPCIVendorDevs}
+            neutron::plugins::ml2::overlay_ip_version: {get_param: NeutronOverlayIPVersion}
 
       step_config: |
         include ::tripleo::profile::base::neutron::plugins::ml2
